@@ -1,0 +1,27 @@
+name: pixeltime
+description: "Create pixel based art for your games or projects."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+  fonts:
+    - family: Pixelify
+      fonts:
+        - asset: assets/fonts/PixelifySans-VariableFont_wght.ttf
