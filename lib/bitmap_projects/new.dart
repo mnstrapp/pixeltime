@@ -1,20 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class NewBitmapProjectOverlay extends StatefulWidget {
+import 'project.dart';
+import 'provider.dart';
+
+class NewBitmapProjectOverlay extends ConsumerStatefulWidget {
   final VoidCallback onClose;
 
   const NewBitmapProjectOverlay({super.key, required this.onClose});
 
   @override
-  State<NewBitmapProjectOverlay> createState() =>
+  ConsumerState<NewBitmapProjectOverlay> createState() =>
       _NewBitmapProjectOverlayState();
 }
 
-class _NewBitmapProjectOverlayState extends State<NewBitmapProjectOverlay> {
+class _NewBitmapProjectOverlayState
+    extends ConsumerState<NewBitmapProjectOverlay> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
 
   final _nameFocusNode = FocusNode();
+
+  void _showError(String error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error)),
+    );
+  }
+
+  Future<void> _createProject() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final navigator = Navigator.of(context);
+
+    final name = _nameController.text;
+    final description = _descriptionController.text;
+    final (project, error) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .create(name: name, description: description);
+    if (error != null) {
+      _showError(error);
+      return;
+    }
+    ref.read(bitmapProjectProvider.notifier).project = project;
+
+    widget.onClose();
+    navigator.push(
+      MaterialPageRoute(builder: (context) => BitmapProjectScreen()),
+    );
+  }
 
   @override
   void initState() {
@@ -38,16 +74,26 @@ class _NewBitmapProjectOverlayState extends State<NewBitmapProjectOverlay> {
         ),
         Form(
           key: _formKey,
-          child: TextFormField(
-            focusNode: _nameFocusNode,
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Name is required';
-              }
-              return null;
-            },
+          child: Column(
+            children: [
+              TextFormField(
+                focusNode: _nameFocusNode,
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Name is required';
+                  }
+                  return null;
+                },
+                onEditingComplete: _createProject,
+              ),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+                onEditingComplete: _createProject,
+              ),
+            ],
           ),
         ),
         Padding(
@@ -61,7 +107,7 @@ class _NewBitmapProjectOverlayState extends State<NewBitmapProjectOverlay> {
                 label: const Text('Cancel'),
               ),
               FilledButton.icon(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _createProject,
                 icon: const Icon(Icons.add),
                 label: const Text('Create'),
               ),
