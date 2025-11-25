@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../ui/menu_bar.dart';
-import '../ui/scaffolf.dart';
+import '../ui/scaffold.dart';
 import 'provider.dart';
 
 class BitmapProjectScreen extends ConsumerWidget {

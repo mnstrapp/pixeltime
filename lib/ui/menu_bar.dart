@@ -21,11 +21,17 @@ class UIMenuBarItem extends StatelessWidget {
     if (children.isNotEmpty) {
       return SubmenuButton(
         menuChildren: children,
+        style: ButtonStyle(
+          elevation: WidgetStateProperty.all(BaseTheme.elevationSmall),
+        ),
         child: Text(label),
       );
     }
     return MenuItemButton(
       leadingIcon: icon != null ? Icon(icon) : null,
+      style: ButtonStyle(
+        elevation: WidgetStateProperty.all(BaseTheme.elevationSmall),
+      ),
       onPressed: onPressed,
       child: MenuAcceleratorLabel(label),
     );
@@ -64,7 +70,7 @@ class _UIMenuBarState extends State<UIMenuBar> {
     ];
 
     return Padding(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(8),
       child: MenuBar(
         style: MenuStyle(
           backgroundColor: WidgetStateProperty.all(
