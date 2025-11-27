@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'theme.dart';
+
 class OverlayContent extends StatelessWidget {
   final VoidCallback onClose;
   final Widget child;
@@ -33,10 +35,15 @@ class OverlayContent extends StatelessWidget {
                 right: size.width * 0.33,
                 bottom: size.height * 0.33,
               ),
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.only(
+                right: 16.0,
+                left: 16.0,
+              ),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(8.0),
+                color: BaseColors.overlayColor,
+                borderRadius: BorderRadius.circular(
+                  BaseTheme.borderRadiusSmall,
+                ),
               ),
               child: child,
             ),

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
-import 'project.dart';
-import 'provider.dart';
+import '../models/bitmap_project.dart';
 
 class NewBitmapProjectOverlay extends ConsumerStatefulWidget {
-  final VoidCallback onClose;
+  final VoidCallback onCancel;
+  final Function(BitmapProject) onSubmit;
 
-  const NewBitmapProjectOverlay({super.key, required this.onClose});
+  const NewBitmapProjectOverlay({
+    super.key,
+    required this.onCancel,
+    required this.onSubmit,
+  });
 
   @override
   ConsumerState<NewBitmapProjectOverlay> createState() =>
@@ -21,35 +26,29 @@ class _NewBitmapProjectOverlayState
   final _descriptionController = TextEditingController();
 
   final _nameFocusNode = FocusNode();
-
-  void _showError(String error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(error)),
-    );
-  }
-
   Future<void> _createProject() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final navigator = Navigator.of(context);
+    try {
+      final uuid = const Uuid().v4();
+      final createdAt = DateTime.now().toIso8601String();
+      final updatedAt = DateTime.now().toIso8601String();
 
-    final name = _nameController.text;
-    final description = _descriptionController.text;
-    final (project, error) = await ref
-        .read(bitmapProjectsProvider.notifier)
-        .create(name: name, description: description);
-    if (error != null) {
-      _showError(error);
-      return;
+      final project = BitmapProject(
+        id: uuid,
+        name: _nameController.text,
+        description: _descriptionController.text,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+      widget.onSubmit(project);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating project: $e')),
+      );
     }
-    ref.read(bitmapProjectProvider.notifier).project = project;
-
-    widget.onClose();
-    navigator.push(
-      MaterialPageRoute(builder: (context) => BitmapProjectScreen()),
-    );
   }
 
   @override
@@ -102,7 +101,7 @@ class _NewBitmapProjectOverlayState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton.icon(
-                onPressed: widget.onClose,
+                onPressed: widget.onCancel,
                 icon: const Icon(Icons.cancel),
                 label: const Text('Cancel'),
               ),

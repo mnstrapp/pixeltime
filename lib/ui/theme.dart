@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Light theme colors
 class BaseColors {
   static const primaryColor = Color(0xff00f0ff);
   static final primaryContrastColor = Color.lerp(
@@ -39,14 +40,72 @@ class BaseColors {
     Colors.white,
     0.6,
   );
+  static const overlayColor = Color.fromARGB(255, 245, 254, 255);
+  static final overlayContrastColor = Color.lerp(
+    overlayColor,
+    Colors.black,
+    0.9,
+  );
+  static final overlayBodyColor = primaryBodyColor;
 }
 
-final _baseTheme = ThemeData(useMaterial3: true);
-final _baseTextTheme = _baseTheme.textTheme.apply(
-  fontFamily: 'Pixelify',
-  displayColor: BaseColors.primaryContrastColor,
-  bodyColor: BaseColors.primaryBodyColor,
-);
+// Dark theme colors
+class DarkColors {
+  static final primaryColor =
+      Color.lerp(
+        BaseColors.primaryColor,
+        Colors.black,
+        0.9,
+      ) ??
+      Color.fromARGB(255, 0, 24, 26);
+  static final primaryContrastColor = Color.lerp(
+    primaryColor,
+    BaseColors.primaryColor,
+    0.9,
+  );
+  static final primaryBodyColor = Color.lerp(
+    primaryColor,
+    BaseColors.primaryColor,
+    0.2,
+  );
+  static final primaryContainerColor = Color.lerp(
+    primaryColor,
+    BaseColors.primaryColor,
+    0.9,
+  );
+  static final primaryContainerContrastColor = Color.lerp(
+    primaryContainerColor,
+    primaryColor,
+    0.9,
+  );
+  static final primaryContainerBodyColor = Color.lerp(
+    primaryContainerColor,
+    primaryColor,
+    0.6,
+  );
+  static final primaryInverseContainerColor = Color.lerp(
+    primaryColor,
+    BaseColors.primaryColor,
+    0.1,
+  );
+  static final primaryInverseContainerContrastColor = Color.lerp(
+    primaryInverseContainerColor,
+    Colors.white,
+    0.9,
+  );
+  static final primaryInverseContainerBodyColor = Color.lerp(
+    primaryInverseContainerColor,
+    Colors.white,
+    0.6,
+  );
+  static const overlayColor = Color.fromARGB(255, 245, 254, 255);
+  static final overlayContrastColor = Color.lerp(
+    overlayColor,
+    primaryColor,
+    0.9,
+  );
+  static final overlayBodyColor = primaryBodyColor;
+}
 
 class BreakPoints {
   static const tabletBreakpoint = 992;
@@ -66,11 +125,253 @@ class BaseTheme {
   static ThemeData get themeData => ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff00f0ff)),
-    textTheme: _baseTextTheme,
+    textTheme: ThemeData(useMaterial3: true).textTheme.apply(
+      fontFamily: 'Pixelify',
+      displayColor: BaseColors.primaryContrastColor,
+      bodyColor: BaseColors.primaryBodyColor,
+    ),
     primaryColor: BaseColors.primaryColor,
-    primaryColorDark: Color.lerp(BaseColors.primaryColor, Colors.black, 0.5),
     scaffoldBackgroundColor: BaseColors.primaryColor,
-    appBarTheme: AppBarTheme(backgroundColor: BaseColors.primaryColor),
+    cardTheme: CardThemeData(
+      color: BaseColors.overlayColor,
+      elevation: elevationSmall,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusSmall),
+      ),
+    ),
+    menuTheme: MenuThemeData(
+      style: MenuStyle(
+        elevation: WidgetStateProperty.all(elevationSmall),
+        backgroundColor: WidgetStateProperty.all(
+          BaseColors.primaryInverseContainerColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    menuBarTheme: MenuBarThemeData(
+      style: MenuStyle(
+        elevation: WidgetStateProperty.all(elevationSmall),
+        backgroundColor: WidgetStateProperty.all(
+          BaseColors.primaryInverseContainerColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    menuButtonTheme: MenuButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          BaseColors.primaryInverseContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          BaseColors.primaryInverseContainerContrastColor,
+        ),
+        iconColor: WidgetStateProperty.all(
+          BaseColors.primaryInverseContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.all(BaseColors.primaryBodyColor),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerContrastColor,
+        ),
+        iconColor: WidgetStateProperty.all(
+          BaseColors.primaryContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      contentPadding: EdgeInsets.all(borderRadiusMedium),
+      enabledBorder: InputBorder.none,
+      disabledBorder: InputBorder.none,
+      filled: true,
+      fillColor: Color.lerp(
+        BaseColors.primaryColor,
+        Colors.white,
+        0.8,
+      ),
+      floatingLabelStyle: TextStyle(
+        color: BaseColors.primaryBodyColor!,
+        fontSize: 20,
+      ),
+      labelStyle: TextStyle(
+        color: BaseColors.primaryBodyColor!,
+      ),
+      iconColor: BaseColors.primaryBodyColor!,
+      visualDensity: VisualDensity.compact,
+      prefixIconColor: BaseColors.primaryBodyColor!,
+      suffixIconColor: BaseColors.primaryBodyColor!,
+      helperStyle: TextStyle(
+        color: BaseColors.primaryBodyColor!,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusSmall),
+        borderSide: BorderSide(
+          color: BaseColors.primaryBodyColor!,
+          width: 4,
+        ),
+      ),
+      floatingLabelAlignment: FloatingLabelAlignment.center,
+    ),
+  );
+
+  static ThemeData get darkThemeData => ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(seedColor: DarkColors.primaryColor),
+    textTheme: ThemeData(useMaterial3: true).textTheme.apply(
+      fontFamily: 'Pixelify',
+      displayColor: DarkColors.primaryContrastColor,
+      bodyColor: DarkColors.primaryBodyColor,
+    ),
+    primaryColor: DarkColors.primaryColor,
+    scaffoldBackgroundColor: DarkColors.primaryColor,
+    cardTheme: CardThemeData(
+      color: DarkColors.overlayColor,
+      elevation: elevationSmall,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(borderRadiusSmall),
+      ),
+    ),
+    menuTheme: MenuThemeData(
+      style: MenuStyle(
+        elevation: WidgetStateProperty.all(elevationSmall),
+        backgroundColor: WidgetStateProperty.all(
+          DarkColors.primaryInverseContainerColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    menuBarTheme: MenuBarThemeData(
+      style: MenuStyle(
+        elevation: WidgetStateProperty.all(elevationSmall),
+        backgroundColor: WidgetStateProperty.all(
+          DarkColors.primaryInverseContainerColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    menuButtonTheme: MenuButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          DarkColors.primaryInverseContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          DarkColors.primaryInverseContainerContrastColor,
+        ),
+        iconColor: WidgetStateProperty.all(
+          DarkColors.primaryInverseContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.all(DarkColors.primaryBodyColor),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerColor,
+        ),
+        foregroundColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerContrastColor,
+        ),
+        iconColor: WidgetStateProperty.all(
+          DarkColors.primaryContainerContrastColor,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      contentPadding: EdgeInsets.all(borderRadiusMedium),
+      enabledBorder: InputBorder.none,
+      disabledBorder: InputBorder.none,
+      filled: true,
+      fillColor: Color.lerp(
+        DarkColors.primaryContainerColor,
+        Colors.white,
+        0.8,
+      ),
+      floatingLabelStyle: TextStyle(
+        color: DarkColors.primaryBodyColor!,
+        fontSize: 20,
+      ),
+      labelStyle: TextStyle(
+        color: DarkColors.primaryBodyColor!,
+      ),
+      iconColor: DarkColors.primaryBodyColor!,
+      visualDensity: VisualDensity.compact,
+      prefixIconColor: DarkColors.primaryBodyColor!,
+      suffixIconColor: DarkColors.primaryBodyColor!,
+      helperStyle: TextStyle(
+        color: DarkColors.primaryBodyColor!,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: DarkColors.primaryContrastColor!,
+          width: 4,
+        ),
+        borderRadius: BorderRadius.circular(borderRadiusSmall),
+      ),
+      floatingLabelAlignment: FloatingLabelAlignment.center,
+    ),
   );
 
   static double get elevationSmall => 2;

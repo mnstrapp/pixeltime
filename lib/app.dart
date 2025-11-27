@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'menu.dart';
 import 'ui/theme.dart';
+import 'workspace/workspace.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -11,7 +11,8 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: BaseTheme.themeData,
-      home: const MenuScreen(),
+      darkTheme: BaseTheme.darkThemeData,
+      home: const Workspace(),
     );
   }
 }

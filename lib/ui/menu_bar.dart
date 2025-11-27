@@ -59,25 +59,19 @@ class _UIMenuBarState extends State<UIMenuBar> {
     List<Widget> menuBarChildren = [
       if (_isExpanded) ...widget.children.map((child) => child),
       _isExpanded
-          ? IconButton(
+          ? MenuItemButton(
+              trailingIcon: const Icon(Icons.keyboard_arrow_left),
               onPressed: () => setState(() => _isExpanded = !_isExpanded),
-              icon: const Icon(Icons.keyboard_arrow_left),
             )
-          : IconButton(
+          : MenuItemButton(
+              trailingIcon: const Icon(Icons.keyboard_arrow_right),
               onPressed: () => setState(() => _isExpanded = !_isExpanded),
-              icon: const Icon(Icons.keyboard_arrow_right),
             ),
     ];
 
     return Padding(
       padding: const EdgeInsets.all(8),
       child: MenuBar(
-        style: MenuStyle(
-          backgroundColor: WidgetStateProperty.all(
-            Theme.of(context).colorScheme.surface,
-          ),
-          elevation: WidgetStateProperty.all(BaseTheme.elevationSmall),
-        ),
         children: menuBarChildren,
       ),
     );
