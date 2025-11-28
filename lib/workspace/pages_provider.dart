@@ -24,4 +24,8 @@ class WorkspacePagesNotifier extends Notifier<List<Widget>> {
   Widget? get page => ref.read(workspaceIndexProvider) >= 0
       ? state[ref.read(workspaceIndexProvider)]
       : null;
+
+  void remove(int index) {
+    state = state.where((page) => state.indexOf(page) != index).toList();
+  }
 }

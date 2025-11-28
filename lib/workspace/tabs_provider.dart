@@ -27,4 +27,8 @@ class WorkspaceTabsNotifier extends Notifier<List<UITabBarItem>> {
   UITabBarItem? get tab => ref.read(workspaceIndexProvider) >= 0
       ? state[ref.read(workspaceIndexProvider)]
       : null;
+
+  void remove(int index) {
+    state = state.where((tab) => state.indexOf(tab) != index).toList();
+  }
 }

@@ -88,6 +88,25 @@ class WorkspaceState extends ConsumerState<Workspace> {
     ];
   }
 
+  void _onTabClosed(int index) {
+    ref.read(workspaceTabsProvider.notifier).remove(index);
+    ref.read(workspacePagesProvider.notifier).remove(index);
+    final tabs = ref.read(workspaceTabsProvider);
+    ref
+        .read(workspaceIndexProvider.notifier)
+        .index(
+          tabs.isNotEmpty
+              ? index <= tabs.length - 1
+                    ? index
+                    : tabs.length - 1
+              : -1,
+        );
+  }
+
+  void _onTabPressed(int index) {
+    ref.read(workspaceIndexProvider.notifier).index(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     final menuBarItems = _buildMenuBarItems();
@@ -109,7 +128,21 @@ class WorkspaceState extends ConsumerState<Workspace> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: [
-              UIMenuBar(children: menuBarItems),
+              Stack(
+                children: [
+                  UIMenuBar(children: menuBarItems),
+                  Center(
+                    child: UITabBar(
+                      selectedIndex: workspaceIndex >= 0
+                          ? workspaceIndex
+                          : null,
+                      onPressed: _onTabPressed,
+                      onClosed: _onTabClosed,
+                      children: tabs,
+                    ),
+                  ),
+                ],
+              ),
               Expanded(
                 child:
                     page ??
@@ -132,15 +165,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
                         },
                       ),
                     ),
-              ),
-              Center(
-                child: UITabBar(
-                  selectedIndex: workspaceIndex >= 0 ? workspaceIndex : null,
-                  onTabPressed: (index) {
-                    ref.read(workspaceIndexProvider.notifier).index(index);
-                  },
-                  children: tabs,
-                ),
               ),
             ],
           ),

@@ -380,4 +380,7 @@ class BaseTheme {
   static double get borderRadiusSmall => 4;
   static double get borderRadiusMedium => 8;
   static double get borderRadiusLarge => 16;
+  static double get iconSizeSmall => 12;
+  static double get iconSizeMedium => 24;
+  static double get iconSizeLarge => 48;
 }
