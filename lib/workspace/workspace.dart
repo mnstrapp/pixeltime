@@ -115,60 +115,56 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final page = ref.watch(workspacePagesProvider.notifier).page;
 
     return Scaffold(
-      body: Stack(
-        alignment: Alignment.center,
-        fit: StackFit.expand,
-        children: [
-          OverlayPortal(
-            controller: _overlayController,
-            overlayChildBuilder: (context) => _overlayContent!,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Stack(
-                children: [
-                  UIMenuBar(children: menuBarItems),
-                  Center(
-                    child: UITabBar(
-                      selectedIndex: workspaceIndex >= 0
-                          ? workspaceIndex
-                          : null,
-                      onPressed: _onTabPressed,
-                      onClosed: _onTabClosed,
-                      children: tabs,
-                    ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child:
-                    page ??
-                    Center(
-                      child: FilledButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('New Project'),
-                        onPressed: () {
-                          showOverlay(
-                            NewBitmapProjectOverlay(
-                              onCancel: hideOverlay,
-                              onSubmit: (project) {
-                                ref
-                                    .read(workspaceProvider.notifier)
-                                    .add(project);
-                                hideOverlay();
-                              },
-                            ),
-                          );
-                        },
+      body: SafeArea(
+        child: Stack(
+          alignment: Alignment.center,
+          fit: StackFit.expand,
+          children: [
+            OverlayPortal(
+              controller: _overlayController,
+              overlayChildBuilder: (context) => _overlayContent!,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                UIMenuBar(children: menuBarItems),
+                Expanded(
+                  child:
+                      page ??
+                      Center(
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('New Project'),
+                          onPressed: () {
+                            showOverlay(
+                              NewBitmapProjectOverlay(
+                                onCancel: hideOverlay,
+                                onSubmit: (project) {
+                                  ref
+                                      .read(workspaceProvider.notifier)
+                                      .add(project);
+                                  hideOverlay();
+                                },
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-              ),
-            ],
-          ),
-        ],
+                ),
+                Center(
+                  child: UITabBar(
+                    selectedIndex: workspaceIndex >= 0 ? workspaceIndex : null,
+                    onPressed: _onTabPressed,
+                    onClosed: _onTabClosed,
+                    children: tabs,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
