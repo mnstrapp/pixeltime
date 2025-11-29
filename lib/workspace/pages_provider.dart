@@ -1,27 +1,27 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../bitmap_projects/project.dart';
 import 'index_provider.dart';
 
 final workspacePagesProvider =
-    NotifierProvider<WorkspacePagesNotifier, List<Widget>>(() {
+    NotifierProvider<WorkspacePagesNotifier, List<BitmapProjectScreen>>(() {
       return WorkspacePagesNotifier();
     });
 
-class WorkspacePagesNotifier extends Notifier<List<Widget>> {
+class WorkspacePagesNotifier extends Notifier<List<BitmapProjectScreen>> {
   @override
-  List<Widget> build() {
+  List<BitmapProjectScreen> build() {
     return [];
   }
 
-  (Widget, String?) add({
-    required Widget page,
+  (BitmapProjectScreen, String?) add({
+    required BitmapProjectScreen page,
   }) {
     state = [...state, page];
     return (page, null);
   }
 
-  Widget? get page => ref.read(workspaceIndexProvider) >= 0
+  BitmapProjectScreen? get page => ref.read(workspaceIndexProvider) >= 0
       ? state[ref.read(workspaceIndexProvider)]
       : null;
 
