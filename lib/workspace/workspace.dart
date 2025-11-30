@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/new.dart';
+import '../database/database.dart';
 import '../models/bitmap_project.dart';
 import '../ui/overlay_content.dart';
 import '../ui/menu_bar.dart';
 import '../ui/tab_bar.dart';
+import '../ui/theme.dart';
 import 'index_provider.dart';
+import 'recent_project.dart';
 import 'menu_bar_provider.dart';
 import 'projects_provider.dart';
 import 'tabs_provider.dart';
@@ -60,18 +64,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
               showOverlay(
                 NewBitmapProjectOverlay(
                   onCancel: hideOverlay,
-                  onSubmit: (project) {
-                    final (success, error) = ref
-                        .read(workspaceProvider.notifier)
-                        .add(project);
-                    if (error != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(error)),
-                      );
-                      return;
-                    }
-                    hideOverlay();
-                  },
+                  onSubmit: _onSubmitNewProject,
                 ),
               );
             },
@@ -89,9 +82,11 @@ class WorkspaceState extends ConsumerState<Workspace> {
     ];
   }
 
-  void _onTabClosed(int index) {
+  Future<void> _onTabClosed(int index) async {
     final messenger = ScaffoldMessenger.of(context);
-    final (success, error) = ref.read(workspaceProvider.notifier).remove(index);
+    final (success, error) = await ref
+        .read(workspaceProvider.notifier)
+        .remove(index);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -119,7 +114,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
     }
   }
 
-  Future<void> _onSubmitNewProject(BitmapProject project) async {
+  void _onSubmitNewProject(BitmapProject project) {
     final messenger = ScaffoldMessenger.of(context);
     final (_, addProjectError) = ref
         .read(workspaceProvider.notifier)
@@ -130,15 +125,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
       );
       return;
     }
-    final (_, saveProjectError) = await ref
-        .read(workspaceProvider.notifier)
-        .save();
-    if (saveProjectError != null) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(saveProjectError)),
-      );
-      return;
-    }
+
     hideOverlay();
     messenger.showSnackBar(
       SnackBar(content: Text('Project created and saved')),
@@ -146,8 +133,22 @@ class WorkspaceState extends ConsumerState<Workspace> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ref.read(bitmapProjectsProvider.notifier).loadAll();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final size = MediaQuery.sizeOf(context);
+
     List<UIMenuBarItem> menuBarItems = _buildMenuBarItems();
+    final bitmapProjects = ref.watch(bitmapProjectsProvider);
+    final recentProjects = bitmapProjects.take(5).toList();
+
     final tabs = ref.watch(workspaceTabsProvider);
     final workspaceIndex = ref.watch(workspaceIndexProvider);
     final projectScreen = ref
@@ -201,19 +202,59 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 Expanded(
                   child:
                       projectScreen ??
-                      Center(
-                        child: FilledButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text('New Project'),
-                          onPressed: () {
-                            showOverlay(
-                              NewBitmapProjectOverlay(
-                                onCancel: hideOverlay,
-                                onSubmit: _onSubmitNewProject,
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Center(
+                            child: FilledButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('New Project'),
+                              onPressed: () {
+                                showOverlay(
+                                  NewBitmapProjectOverlay(
+                                    onCancel: hideOverlay,
+                                    onSubmit: _onSubmitNewProject,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          if (recentProjects.isNotEmpty)
+                            Container(
+                              width: size.width > BreakPoints.mobileBreakpoint
+                                  ? size.width * 0.33
+                                  : size.width,
+                              margin: EdgeInsets.all(
+                                BaseTheme.borderRadiusMedium,
                               ),
-                            );
-                          },
-                        ),
+                              padding: EdgeInsets.all(
+                                BaseTheme.borderRadiusSmall,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(
+                                  BaseTheme.borderRadiusSmall,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text('Recent Projects'),
+                                  ...recentProjects.map(
+                                    (project) => RecentProjectTile(
+                                      project: project,
+                                      onTap: () {
+                                        ref
+                                            .read(workspaceProvider.notifier)
+                                            .add(project);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       ),
                 ),
                 Center(

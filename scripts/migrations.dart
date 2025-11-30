@@ -44,12 +44,9 @@ class CreateCommand extends Command {
       exit(1);
     }
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final upFile = File('${inputDir.path}/${timestamp}_${name}_up.sql');
-    final downFile = File('${inputDir.path}/${timestamp}_${name}_down.sql');
-    upFile.createSync();
-    upFile.writeAsStringSync('');
-    downFile.createSync();
-    downFile.writeAsStringSync('');
+    final file = File('${inputDir.path}/${timestamp}_name.sql');
+    file.createSync();
+    file.writeAsStringSync('');
   }
 }
 
@@ -63,32 +60,14 @@ class GenerateCommand extends Command {
 
   @override
   Future<void> run() async {
-    final upMigrations = <String, String>{};
-    final downMigrations = <String, String>{};
+    final migrations = <Migration>[];
     final files = inputDir.listSync();
-    final upFiles = files.where((f) => f.path.endsWith('_up.sql')).toList();
-    final downFiles = files.where((f) => f.path.endsWith('_down.sql')).toList();
-    for (final f in upFiles) {
+    for (final f in files) {
       final fileName = f.path.split('/').last;
       final version = fileName.split('_').first;
       final data = File(f.path).readAsStringSync();
-      upMigrations[version] = data;
+      migrations.add(Migration(version: version, data: data));
     }
-    for (final f in downFiles) {
-      final fileName = f.path.split('/').last;
-      final version = fileName.split('_').first;
-      final data = File(f.path).readAsStringSync();
-      downMigrations[version] = data;
-    }
-    final migrations = upMigrations.entries
-        .map(
-          (e) => Migration(
-            version: e.key,
-            upData: e.value,
-            downData: downMigrations[e.key] ?? '',
-          ),
-        )
-        .toList();
     migrations.sort((a, b) => a.version.compareTo(b.version));
     String content =
         '''
@@ -104,8 +83,7 @@ const migrations = [
           '''
 	Migration(
     version: ${m.version},
-    upData: r\'\'\'${m.upData}\'\'\',
-    downData: r\'\'\'${m.downData}\'\'\',
+    data: r\'\'\'${m.data}\'\'\',
   ),
 ''';
     }
@@ -117,12 +95,10 @@ const migrations = [
 
 class Migration {
   final String version;
-  final String upData;
-  final String downData;
+  final String data;
 
   Migration({
     required this.version,
-    required this.upData,
-    required this.downData,
+    required this.data,
   });
 }

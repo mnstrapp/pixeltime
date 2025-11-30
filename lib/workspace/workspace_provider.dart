@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/project.dart';
 import '../models/bitmap_project.dart';
 import '../database/database.dart';
@@ -41,7 +42,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     return (true, null);
   }
 
-  (bool, String?) remove(int index) {
+  Future<(bool, String?)> remove(int index) async {
     ref.read(workspaceTabsProvider.notifier).remove(index);
     ref.read(workspaceProjectsProvider.notifier).remove(index);
     final tabs = ref.read(workspaceTabsProvider);
@@ -54,6 +55,15 @@ class WorkspaceNotifier extends Notifier<bool> {
                     : tabs.length - 1
               : -1,
         );
+
+    if (tabs.isEmpty) {
+      final (_, error) = await ref
+          .read(bitmapProjectsProvider.notifier)
+          .loadAll();
+      if (error != null) {
+        return (false, error);
+      }
+    }
 
     return (true, null);
   }
@@ -68,7 +78,18 @@ class WorkspaceNotifier extends Notifier<bool> {
 
     final project = projectScreen.project;
     final db = await getDatabase();
-    return await project.save(db);
+    final (_, saveError) = await project.save(db);
+    if (saveError != null) {
+      return (false, saveError);
+    }
+    final (_, loadError) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .loadAll();
+    if (loadError != null) {
+      return (false, loadError);
+    }
+    state = true;
+    return (true, null);
   }
 
   Future<(bool, String?)> saveAll() async {
@@ -80,6 +101,13 @@ class WorkspaceNotifier extends Notifier<bool> {
         return (false, error);
       }
     }
+    final (_, loadError) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .loadAll();
+    if (loadError != null) {
+      return (false, loadError);
+    }
+    state = true;
     return (true, null);
   }
 }

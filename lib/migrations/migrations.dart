@@ -37,19 +37,3 @@ Future<void> run(Database database) async {
     }
   }
 }
-
-Future<void> rollback(Database database, int? version) async {
-  for (final migration in migrations.reversed) {
-    if (version != null && migration.version > version) {
-      await migration.rollback(database);
-      await database.execute('DELETE FROM migrations WHERE version = ?', [
-        migration.version,
-      ]);
-      continue;
-    }
-    await migration.rollback(database);
-    await database.execute('DELETE FROM migrations WHERE version = ?', [
-      migration.version,
-    ]);
-  }
-}

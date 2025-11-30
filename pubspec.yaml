@@ -21,6 +21,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   universal_platform: ^1.1.0
+  timeago: ^3.7.1
 
 dev_dependencies:
   flutter_test:
