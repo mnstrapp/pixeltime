@@ -32,16 +32,9 @@ class _NewBitmapProjectOverlayState
     }
 
     try {
-      final uuid = const Uuid().v4();
-      final createdAt = DateTime.now().toIso8601String();
-      final updatedAt = DateTime.now().toIso8601String();
-
       final project = BitmapProject(
-        id: uuid,
         name: _nameController.text,
         description: _descriptionController.text,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
       );
       widget.onSubmit(project);
     } catch (e) {

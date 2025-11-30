@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/new.dart';
+import '../models/bitmap_project.dart';
 import '../ui/overlay_content.dart';
 import '../ui/menu_bar.dart';
 import '../ui/tab_bar.dart';
 import 'index_provider.dart';
 import 'menu_bar_provider.dart';
-import 'pages_provider.dart';
+import 'projects_provider.dart';
 import 'tabs_provider.dart';
 import 'workspace_provider.dart';
 
@@ -89,30 +90,97 @@ class WorkspaceState extends ConsumerState<Workspace> {
   }
 
   void _onTabClosed(int index) {
-    ref.read(workspaceTabsProvider.notifier).remove(index);
-    ref.read(workspacePagesProvider.notifier).remove(index);
-    final tabs = ref.read(workspaceTabsProvider);
-    ref
-        .read(workspaceIndexProvider.notifier)
-        .index(
-          tabs.isNotEmpty
-              ? index <= tabs.length - 1
-                    ? index
-                    : tabs.length - 1
-              : -1,
-        );
+    final messenger = ScaffoldMessenger.of(context);
+    final (success, error) = ref.read(workspaceProvider.notifier).remove(index);
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
   }
 
   void _onTabPressed(int index) {
     ref.read(workspaceIndexProvider.notifier).index(index);
   }
 
+  Future<void> _onSave() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final (success, error) = await ref.read(workspaceProvider.notifier).save();
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
+
+  Future<void> _onSaveAll() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final (success, error) = await ref
+        .read(workspaceProvider.notifier)
+        .saveAll();
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
+
+  Future<void> _onSubmitNewProject(BitmapProject project) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final (_, addProjectError) = ref
+        .read(workspaceProvider.notifier)
+        .add(project);
+    if (addProjectError != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(addProjectError)),
+      );
+      return;
+    }
+    final (_, saveProjectError) = await ref
+        .read(workspaceProvider.notifier)
+        .save();
+    if (saveProjectError != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(saveProjectError)),
+      );
+      return;
+    }
+    hideOverlay();
+    messenger.showSnackBar(
+      SnackBar(content: Text('Project created and saved')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final menuBarItems = _buildMenuBarItems();
+    List<UIMenuBarItem> menuBarItems = _buildMenuBarItems();
     final tabs = ref.watch(workspaceTabsProvider);
     final workspaceIndex = ref.watch(workspaceIndexProvider);
-    final page = ref.watch(workspacePagesProvider.notifier).page;
+    final projectScreen = ref
+        .watch(workspaceProjectsProvider.notifier)
+        .projectScreen;
+
+    if (projectScreen != null) {
+      menuBarItems = [
+        ...menuBarItems.sublist(0, 1),
+        UIMenuBarItem(
+          label: 'File',
+          icon: Icons.save,
+          children: [
+            UIMenuBarItem(
+              label: 'Save',
+              icon: Icons.save,
+              onPressed: _onSave,
+            ),
+            UIMenuBarItem(
+              label: 'Save All',
+              icon: Icons.save,
+              onPressed: _onSaveAll,
+            ),
+            UIMenuBarItem(
+              label: 'Close',
+              icon: Icons.close,
+              onPressed: () => _onTabClosed(workspaceIndex),
+            ),
+          ],
+        ),
+        ...menuBarItems.sublist(1),
+      ];
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -132,7 +200,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 UIMenuBar(children: menuBarItems),
                 Expanded(
                   child:
-                      page ??
+                      projectScreen ??
                       Center(
                         child: FilledButton.icon(
                           icon: const Icon(Icons.add),
@@ -141,12 +209,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
                             showOverlay(
                               NewBitmapProjectOverlay(
                                 onCancel: hideOverlay,
-                                onSubmit: (project) {
-                                  ref
-                                      .read(workspaceProvider.notifier)
-                                      .add(project);
-                                  hideOverlay();
-                                },
+                                onSubmit: _onSubmitNewProject,
                               ),
                             );
                           },
