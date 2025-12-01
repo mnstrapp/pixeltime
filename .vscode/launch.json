@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "pixeltime",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "preLaunchTask": "Generate Migrations"
+        },
+        {
+            "name": "pixeltime (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "profile",
+            "preLaunchTask": "Generate Migrations"
+        },
+        {
+            "name": "pixeltime (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "release",
+            "preLaunchTask": "Generate Migrations"
+        }
+    ]
+}
