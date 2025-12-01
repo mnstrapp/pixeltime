@@ -57,21 +57,55 @@ class _UIMenuBarState extends State<UIMenuBar> {
   @override
   Widget build(BuildContext context) {
     List<Widget> menuBarChildren = [
+      Image.asset('assets/pixeltime-logo.png', width: 40, height: 40),
       if (_isExpanded) ...widget.children.map((child) => child),
       _isExpanded
           ? MenuItemButton(
               trailingIcon: const Icon(Icons.keyboard_arrow_left),
               onPressed: () => setState(() => _isExpanded = !_isExpanded),
+              style: ButtonStyle(
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(BaseTheme.borderRadiusSmall),
+                      bottomRight: Radius.circular(BaseTheme.borderRadiusSmall),
+                    ),
+                  ),
+                ),
+              ),
             )
           : MenuItemButton(
               trailingIcon: const Icon(Icons.keyboard_arrow_right),
               onPressed: () => setState(() => _isExpanded = !_isExpanded),
+              style: ButtonStyle(
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(BaseTheme.borderRadiusSmall),
+                      bottomRight: Radius.circular(BaseTheme.borderRadiusSmall),
+                    ),
+                  ),
+                ),
+              ),
             ),
     ];
 
     return Padding(
       padding: const EdgeInsets.all(8),
       child: MenuBar(
+        style: MenuStyle(
+          shape: WidgetStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                bottomLeft: Radius.circular(20),
+                topRight: Radius.circular(BaseTheme.borderRadiusSmall),
+                bottomRight: Radius.circular(BaseTheme.borderRadiusSmall),
+              ),
+            ),
+          ),
+          padding: WidgetStateProperty.all(EdgeInsets.zero),
+        ),
         children: menuBarChildren,
       ),
     );

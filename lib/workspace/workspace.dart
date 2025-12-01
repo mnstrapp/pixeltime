@@ -273,79 +273,77 @@ class WorkspaceState extends ConsumerState<Workspace> {
               controller: _overlayController,
               overlayChildBuilder: (context) => _overlayContent!,
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                UIMenuBar(children: menuBarItems),
-                Expanded(
-                  child:
-                      projectScreen ??
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Center(
-                            child: FilledButton.icon(
-                              icon: const Icon(Icons.add),
-                              label: const Text('New Project'),
-                              onPressed: () {
-                                showOverlay(
-                                  NewBitmapProjectOverlay(
-                                    onCancel: hideOverlay,
-                                    onSubmit: _onSubmitNewProject,
-                                  ),
-                                );
-                              },
+            Expanded(
+              child:
+                  projectScreen ??
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Center(
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('New Project'),
+                          onPressed: () {
+                            showOverlay(
+                              NewBitmapProjectOverlay(
+                                onCancel: hideOverlay,
+                                onSubmit: _onSubmitNewProject,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      if (recentProjects.isNotEmpty)
+                        Container(
+                          width: size.width > BreakPoints.mobileBreakpoint
+                              ? size.width * 0.33
+                              : size.width,
+                          margin: EdgeInsets.all(
+                            BaseTheme.borderRadiusMedium,
+                          ),
+                          padding: EdgeInsets.all(
+                            BaseTheme.borderRadiusSmall,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(
+                              BaseTheme.borderRadiusSmall,
                             ),
                           ),
-                          if (recentProjects.isNotEmpty)
-                            Container(
-                              width: size.width > BreakPoints.mobileBreakpoint
-                                  ? size.width * 0.33
-                                  : size.width,
-                              margin: EdgeInsets.all(
-                                BaseTheme.borderRadiusMedium,
-                              ),
-                              padding: EdgeInsets.all(
-                                BaseTheme.borderRadiusSmall,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(
-                                  BaseTheme.borderRadiusSmall,
+                          child: Column(
+                            children: [
+                              Text('Recent Projects'),
+                              ...recentProjects.map(
+                                (project) => BitmapProjectTile(
+                                  project: project,
+                                  onTap: () {
+                                    ref
+                                        .read(workspaceProvider.notifier)
+                                        .add(project);
+                                  },
                                 ),
                               ),
-                              child: Column(
-                                children: [
-                                  Text('Recent Projects'),
-                                  ...recentProjects.map(
-                                    (project) => BitmapProjectTile(
-                                      project: project,
-                                      onTap: () {
-                                        ref
-                                            .read(workspaceProvider.notifier)
-                                            .add(project);
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                ),
-                Center(
-                  child: UITabBar(
-                    selectedIndex: workspaceIndex >= 0 ? workspaceIndex : null,
-                    onPressed: _onTabPressed,
-                    onClosed: _onTabClosed,
-                    children: tabs,
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
-                ),
-              ],
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              child: UIMenuBar(children: menuBarItems),
+            ),
+            Positioned(
+              bottom: 0,
+              child: UITabBar(
+                selectedIndex: workspaceIndex >= 0 ? workspaceIndex : null,
+                onPressed: _onTabPressed,
+                onClosed: _onTabClosed,
+                children: tabs,
+              ),
             ),
           ],
         ),
