@@ -78,6 +78,9 @@ class WorkspaceNotifier extends Notifier<bool> {
     final project = projectScreen.project;
     final (_, saveError) = await project.save();
     if (saveError != null) {
+      if (saveError.contains('UNIQUE')) {
+        return (false, 'Project name must be unique');
+      }
       return (false, saveError);
     }
     final (_, loadError) = await ref
@@ -93,9 +96,12 @@ class WorkspaceNotifier extends Notifier<bool> {
   Future<(bool, String?)> saveAll() async {
     for (final projectScreen in ref.read(workspaceProjectsProvider)) {
       final project = projectScreen.project;
-      final (success, error) = await project.save();
-      if (error != null) {
-        return (false, error);
+      final (_, saveError) = await project.save();
+      if (saveError != null) {
+        if (saveError.contains('UNIQUE')) {
+          return (false, 'Project name must be unique');
+        }
+        return (false, saveError);
       }
     }
     final (_, loadError) = await ref
@@ -105,6 +111,37 @@ class WorkspaceNotifier extends Notifier<bool> {
       return (false, loadError);
     }
     state = true;
+    return (true, null);
+  }
+
+  Future<(bool, String?)> update(BitmapProject project) async {
+    final (_, updateError) = await project.update();
+    if (updateError != null) {
+      if (updateError.contains('UNIQUE')) {
+        return (false, 'Project name must be unique');
+      }
+      return (false, updateError);
+    }
+    final (_, loadError) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .loadAll();
+    if (loadError != null) {
+      return (false, loadError);
+    }
+    return (true, null);
+  }
+
+  Future<(bool, String?)> delete(BitmapProject project) async {
+    final (_, deleteError) = await project.delete();
+    if (deleteError != null) {
+      return (false, deleteError);
+    }
+    final (_, loadError) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .loadAll();
+    if (loadError != null) {
+      return (false, loadError);
+    }
     return (true, null);
   }
 }

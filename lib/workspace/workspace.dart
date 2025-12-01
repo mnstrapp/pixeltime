@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
+import '../bitmap_projects/delete_overlay.dart';
+import '../bitmap_projects/edit_overlay.dart';
+import '../bitmap_projects/manage_projcets_overlay.dart';
 import '../bitmap_projects/new_overlay.dart';
 import '../bitmap_projects/open_overlay.dart';
 import '../models/bitmap_project.dart';
@@ -81,6 +84,11 @@ class WorkspaceState extends ConsumerState<Workspace> {
               );
             },
           ),
+          UIMenuBarItem(
+            label: 'Manage',
+            icon: Icons.manage_accounts,
+            onPressed: _onManageProjects,
+          ),
         ],
       ),
       ...ref.watch(workspaceMenuBarProvider),
@@ -91,6 +99,61 @@ class WorkspaceState extends ConsumerState<Workspace> {
         ],
       ),
     ];
+  }
+
+  void _onManageProjects() {
+    showOverlay(
+      ManageProjectsOverlay(
+        onCancel: hideOverlay,
+        onTapProject: _onOpenProject,
+        onEditProject: _onEditProject,
+        onDeleteProject: _onDeleteProject,
+      ),
+    );
+  }
+
+  Future<void> _onDeleteProjectSubmit(BitmapProject project) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final (_, deleteProjectError) = await ref
+        .read(workspaceProvider.notifier)
+        .delete(project);
+    if (deleteProjectError != null) {
+      messenger.showSnackBar(SnackBar(content: Text(deleteProjectError)));
+    }
+    hideOverlay();
+  }
+
+  Future<void> _onDeleteProject(BitmapProject project) async {
+    hideOverlay();
+    showOverlay(
+      DeleteBitmapProjectOverlay(
+        project: project,
+        onCancel: hideOverlay,
+        onDelete: _onDeleteProjectSubmit,
+      ),
+    );
+  }
+
+  Future<void> _onEditProjectSubmit(BitmapProject project) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final (_, updateProjectError) = await ref
+        .read(workspaceProvider.notifier)
+        .update(project);
+    if (updateProjectError != null) {
+      messenger.showSnackBar(SnackBar(content: Text(updateProjectError)));
+    }
+    hideOverlay();
+  }
+
+  void _onEditProject(BitmapProject project) {
+    hideOverlay();
+    showOverlay(
+      EditBitmapProjectOverlay(
+        project: project,
+        onCancel: hideOverlay,
+        onSubmit: _onEditProjectSubmit,
+      ),
+    );
   }
 
   void _onOpenProject(BitmapProject project) {
