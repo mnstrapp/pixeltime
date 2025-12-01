@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
-import '../bitmap_projects/project.dart';
+import '../bitmap_projects/project_screen.dart';
 import '../models/bitmap_project.dart';
-import '../database/database.dart';
 import 'index_provider.dart';
 import 'projects_provider.dart';
 import 'tabs_provider.dart';
@@ -77,8 +76,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     }
 
     final project = projectScreen.project;
-    final db = await getDatabase();
-    final (_, saveError) = await project.save(db);
+    final (_, saveError) = await project.save();
     if (saveError != null) {
       return (false, saveError);
     }
@@ -93,10 +91,9 @@ class WorkspaceNotifier extends Notifier<bool> {
   }
 
   Future<(bool, String?)> saveAll() async {
-    final db = await getDatabase();
     for (final projectScreen in ref.read(workspaceProjectsProvider)) {
       final project = projectScreen.project;
-      final (success, error) = await project.save(db);
+      final (success, error) = await project.save();
       if (error != null) {
         return (false, error);
       }

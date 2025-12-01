@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../database/database.dart';
 import '../models/bitmap_project.dart';
 
 final bitmapProjectsProvider =
@@ -16,12 +14,10 @@ class BitmapProjectsNotifier extends Notifier<List<BitmapProject>> {
   }
 
   Future<(List<BitmapProject>, String?)> loadAll() async {
-    final db = await getDatabase();
-    final result = await db.query('projects', orderBy: 'updated_at DESC');
-    debugPrint('result: $result');
-    final projects = result
-        .map((project) => BitmapProject.fromMap(project))
-        .toList();
+    final (projects, error) = await BitmapProject.findAll();
+    if (error != null) {
+      return (projects, error);
+    }
     state = projects;
     return (projects, null);
   }

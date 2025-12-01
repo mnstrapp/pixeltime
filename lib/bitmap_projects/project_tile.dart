@@ -4,10 +4,10 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../models/bitmap_project.dart';
 import '../ui/theme.dart';
 
-class RecentProjectTile extends StatelessWidget {
+class BitmapProjectTile extends StatelessWidget {
   final BitmapProject project;
   final VoidCallback? onTap;
-  const RecentProjectTile({super.key, required this.project, this.onTap});
+  const BitmapProjectTile({super.key, required this.project, this.onTap});
 
   @override
   Widget build(BuildContext context) {

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
-import '../bitmap_projects/new.dart';
-import '../database/database.dart';
+import '../bitmap_projects/new_overlay.dart';
+import '../bitmap_projects/open_overlay.dart';
 import '../models/bitmap_project.dart';
 import '../ui/overlay_content.dart';
 import '../ui/menu_bar.dart';
 import '../ui/tab_bar.dart';
 import '../ui/theme.dart';
 import 'index_provider.dart';
-import 'recent_project.dart';
+import '../bitmap_projects/project_tile.dart';
 import 'menu_bar_provider.dart';
 import 'projects_provider.dart';
 import 'tabs_provider.dart';
@@ -69,7 +69,18 @@ class WorkspaceState extends ConsumerState<Workspace> {
               );
             },
           ),
-          UIMenuBarItem(label: 'Open', icon: Icons.open_in_new),
+          UIMenuBarItem(
+            label: 'Open',
+            icon: Icons.open_in_new,
+            onPressed: () {
+              showOverlay(
+                OpenBitmapProjectOverlay(
+                  onCancel: hideOverlay,
+                  onOpen: _onOpenProject,
+                ),
+              );
+            },
+          ),
         ],
       ),
       ...ref.watch(workspaceMenuBarProvider),
@@ -80,6 +91,17 @@ class WorkspaceState extends ConsumerState<Workspace> {
         ],
       ),
     ];
+  }
+
+  void _onOpenProject(BitmapProject project) {
+    final messenger = ScaffoldMessenger.of(context);
+    final (_, addProjectError) = ref
+        .read(workspaceProvider.notifier)
+        .add(project);
+    if (addProjectError != null) {
+      messenger.showSnackBar(SnackBar(content: Text(addProjectError)));
+    }
+    hideOverlay();
   }
 
   Future<void> _onTabClosed(int index) async {
@@ -123,13 +145,8 @@ class WorkspaceState extends ConsumerState<Workspace> {
       messenger.showSnackBar(
         SnackBar(content: Text(addProjectError)),
       );
-      return;
     }
-
     hideOverlay();
-    messenger.showSnackBar(
-      SnackBar(content: Text('Project created and saved')),
-    );
   }
 
   @override
@@ -242,7 +259,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
                                 children: [
                                   Text('Recent Projects'),
                                   ...recentProjects.map(
-                                    (project) => RecentProjectTile(
+                                    (project) => BitmapProjectTile(
                                       project: project,
                                       onTap: () {
                                         ref

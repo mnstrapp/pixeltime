@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+import '../database/database.dart';
+
 class BitmapProject {
   final String? id;
   final String name;
@@ -52,7 +54,8 @@ class BitmapProject {
     );
   }
 
-  Future<(bool, String?)> create(Database db) async {
+  Future<(bool, String?)> create() async {
+    final db = await getDatabase();
     try {
       final id = const Uuid().v4();
       final createdAt = DateTime.now().toIso8601String();
@@ -72,7 +75,8 @@ class BitmapProject {
     }
   }
 
-  Future<(bool, String?)> update(Database db) async {
+  Future<(bool, String?)> update() async {
+    final db = await getDatabase();
     try {
       final updatedAt = DateTime.now().toIso8601String();
       final newProject = copyWith(updatedAt: updatedAt);
@@ -91,15 +95,16 @@ class BitmapProject {
     }
   }
 
-  Future<(bool, String?)> save(Database db) async {
+  Future<(bool, String?)> save() async {
     if (id == null) {
-      return await create(db);
+      return await create();
     } else {
-      return await update(db);
+      return await update();
     }
   }
 
-  Future<(bool, String?)> delete(Database db) async {
+  Future<(bool, String?)> delete() async {
+    final db = await getDatabase();
     try {
       final result = await db.delete(
         'projects',
@@ -112,6 +117,19 @@ class BitmapProject {
       return (true, null);
     } catch (e) {
       return (false, 'Error deleting project: $e');
+    }
+  }
+
+  static Future<(List<BitmapProject>, String?)> findAll() async {
+    final db = await getDatabase();
+    try {
+      final result = await db.query('projects', orderBy: 'updated_at DESC');
+      final projects = result
+          .map((project) => BitmapProject.fromMap(project))
+          .toList();
+      return (projects, null);
+    } catch (e) {
+      return (<BitmapProject>[], 'Error finding all projects: $e');
     }
   }
 }

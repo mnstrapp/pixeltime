@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../database/database.dart';
 import '../models/bitmap_project.dart';
 
 class NewBitmapProjectOverlay extends ConsumerStatefulWidget {
@@ -37,8 +36,7 @@ class _NewBitmapProjectOverlayState
         name: _nameController.text,
         description: _descriptionController.text,
       );
-      final db = await getDatabase();
-      final (_, createProjectError) = await project.create(db);
+      final (_, createProjectError) = await project.create();
       if (createProjectError != null) {
         final errorMessage = createProjectError.contains('UNIQUE')
             ? 'Project name must be unique'

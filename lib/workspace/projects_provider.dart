@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../bitmap_projects/project.dart';
+import '../bitmap_projects/project_screen.dart';
 import 'index_provider.dart';
 
 final workspaceProjectsProvider =
