@@ -78,20 +78,34 @@ class _OpenBitmapProjectOverlayState
           'Open Project',
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        TextFormField(
-          controller: _filterController,
-          focusNode: _filterFocusNode,
-          decoration: InputDecoration(
-            labelText: 'Filter',
-          ),
-          onChanged: (value) => _filterProjects(),
-          onEditingComplete: _filterProjects,
-        ),
-        SingleChildScrollView(
+        Padding(
           padding: EdgeInsets.only(
             top: BaseTheme.borderRadiusSmall,
             bottom: BaseTheme.borderRadiusSmall,
           ),
+          child: TextFormField(
+            controller: _filterController,
+            focusNode: _filterFocusNode,
+            decoration: InputDecoration(
+              labelText: 'Filter',
+              suffixIcon: _filterController.text.isNotEmpty
+                  ? InkWell(
+                      onTap: () {
+                        _filterController.clear();
+                        _filterProjects();
+                      },
+                      child: Icon(
+                        Icons.clear,
+                        size: BaseTheme.iconSizeSmall,
+                      ),
+                    )
+                  : null,
+            ),
+            onChanged: (value) => _filterProjects(),
+            onEditingComplete: _filterProjects,
+          ),
+        ),
+        SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -100,6 +114,20 @@ class _OpenBitmapProjectOverlayState
                   project: project,
                   onTap: () => widget.onOpen(project),
                 ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(
+            top: BaseTheme.borderRadiusSmall,
+            bottom: BaseTheme.borderRadiusSmall,
+          ),
+          child: Row(
+            children: [
+              TextButton(
+                onPressed: widget.onCancel,
+                child: Text('Cancel'),
               ),
             ],
           ),
