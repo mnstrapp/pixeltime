@@ -273,64 +273,61 @@ class WorkspaceState extends ConsumerState<Workspace> {
               controller: _overlayController,
               overlayChildBuilder: (context) => _overlayContent!,
             ),
-            Expanded(
-              child:
-                  projectScreen ??
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Center(
-                        child: FilledButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text('New Project'),
-                          onPressed: () {
-                            showOverlay(
-                              NewBitmapProjectOverlay(
-                                onCancel: hideOverlay,
-                                onSubmit: _onSubmitNewProject,
-                              ),
-                            );
-                          },
-                        ),
+            projectScreen ??
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Center(
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('New Project'),
+                        onPressed: () {
+                          showOverlay(
+                            NewBitmapProjectOverlay(
+                              onCancel: hideOverlay,
+                              onSubmit: _onSubmitNewProject,
+                            ),
+                          );
+                        },
                       ),
-                      if (recentProjects.isNotEmpty)
-                        Container(
-                          width: size.width > BreakPoints.mobileBreakpoint
-                              ? size.width * 0.33
-                              : size.width,
-                          margin: EdgeInsets.all(
-                            BaseTheme.borderRadiusMedium,
-                          ),
-                          padding: EdgeInsets.all(
+                    ),
+                    if (recentProjects.isNotEmpty)
+                      Container(
+                        width: size.width > BreakPoints.mobileBreakpoint
+                            ? size.width * 0.33
+                            : size.width,
+                        margin: EdgeInsets.all(
+                          BaseTheme.borderRadiusMedium,
+                        ),
+                        padding: EdgeInsets.all(
+                          BaseTheme.borderRadiusSmall,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(
                             BaseTheme.borderRadiusSmall,
                           ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(
-                              BaseTheme.borderRadiusSmall,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Text('Recent Projects'),
-                              ...recentProjects.map(
-                                (project) => BitmapProjectTile(
-                                  project: project,
-                                  onTap: () {
-                                    ref
-                                        .read(workspaceProvider.notifier)
-                                        .add(project);
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
-                    ],
-                  ),
-            ),
+                        child: Column(
+                          children: [
+                            Text('Recent Projects'),
+                            ...recentProjects.map(
+                              (project) => BitmapProjectTile(
+                                project: project,
+                                onTap: () {
+                                  ref
+                                      .read(workspaceProvider.notifier)
+                                      .add(project);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
             Positioned(
               top: 0,
               left: 0,
