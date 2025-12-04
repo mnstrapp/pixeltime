@@ -44,7 +44,7 @@ class CreateCommand extends Command {
       exit(1);
     }
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final file = File('${inputDir.path}/${timestamp}_name.sql');
+    final file = File('${inputDir.path}/${timestamp}_$name.sql');
     file.createSync();
     file.writeAsStringSync('');
   }

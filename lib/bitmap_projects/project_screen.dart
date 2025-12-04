@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/bitmap_project.dart';
 import '../ui/theme.dart';
-import 'ui/layers_widget.dart';
+import 'layers/layers_widget.dart';
 
 class BitmapProjectScreen extends ConsumerStatefulWidget {
   final BitmapProject project;
@@ -55,7 +55,7 @@ class BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen> {
           right: BaseTheme.borderRadiusMedium,
           top: 0,
           bottom: 0,
-          child: Center(child: BitmapProjectLayersWidget()),
+          child: Center(child: BitmapProjectLayersWidget(project: project)),
         ),
       ],
     );

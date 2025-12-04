@@ -4,11 +4,11 @@ import 'package:uuid/uuid.dart';
 import '../database/database.dart';
 
 class BitmapProject {
-  final String? id;
-  final String name;
-  final String description;
-  final String? createdAt;
-  final String? updatedAt;
+  String? id;
+  String name;
+  String description;
+  String? createdAt;
+  String? updatedAt;
 
   BitmapProject({
     this.id,
@@ -57,18 +57,15 @@ class BitmapProject {
   Future<(bool, String?)> create() async {
     final db = await getDatabase();
     try {
-      final id = const Uuid().v4();
-      final createdAt = DateTime.now().toIso8601String();
-      final updatedAt = DateTime.now().toIso8601String();
-      final newProject = copyWith(
-        id: id,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-      );
-      final result = await db.insert('projects', newProject.toMap());
+      id = const Uuid().v4();
+      createdAt = DateTime.now().toIso8601String();
+      updatedAt = DateTime.now().toIso8601String();
+
+      final result = await db.insert('projects', toMap());
       if (result == 0) {
         return (false, 'Error creating project');
       }
+
       return (true, null);
     } catch (e) {
       return (false, 'Error creating project: $e');
