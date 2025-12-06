@@ -26,9 +26,12 @@ class BitmapProjectLayersWidget extends ConsumerWidget {
           WidgetState.selected,
         });
 
+    double width = 275;
+    double height = size.height * 0.8;
+
     return Container(
-      width: size.width * 0.2,
-      height: size.height * 0.8,
+      width: width,
+      height: height,
       padding: EdgeInsets.all(BaseTheme.borderRadiusSmall),
       decoration: BoxDecoration(
         color: backgroundColor,

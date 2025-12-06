@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'history.dart';
@@ -35,5 +36,9 @@ class BitmapProjectHistoryNotifier extends Notifier<History> {
       return (false, error);
     }
     return (true, null);
+  }
+
+  void clear() {
+    state = History();
   }
 }
