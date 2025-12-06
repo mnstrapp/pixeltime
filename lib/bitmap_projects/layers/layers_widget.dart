@@ -228,15 +228,13 @@ class _LayerActionsState extends ConsumerState<_LayerActions> {
   }
 
   void _addLayer(BitmapProjectLayer layer) {
-    final workspaceState = Workspace.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    final (_, error) = ref
-        .read(bitmapProjectLayersProvider.notifier)
-        .add(layer: layer);
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
+    try {
+      final workspaceState = Workspace.of(context);
+      workspaceState.hideOverlay();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.toString())));
     }
-    workspaceState.hideOverlay();
   }
 
   @override

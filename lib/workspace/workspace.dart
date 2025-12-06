@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/delete_overlay.dart';
 import '../bitmap_projects/edit_overlay.dart';
-import '../bitmap_projects/manage_projcets_overlay.dart';
+import '../bitmap_projects/manage_projects_overlay.dart';
 import '../bitmap_projects/new_overlay.dart';
 import '../bitmap_projects/open_overlay.dart';
 import '../models/bitmap_project.dart';
@@ -55,50 +55,35 @@ class WorkspaceState extends ConsumerState<Workspace> {
     _overlayController.hide();
   }
 
-  List<UIMenuBarItem> _buildMenuBarItems() {
-    return [
-      UIMenuBarItem(
-        label: 'Projects',
-        children: [
-          UIMenuBarItem(
-            label: 'New',
-            icon: Icons.add,
-            onPressed: () {
-              showOverlay(
-                NewBitmapProjectOverlay(
-                  onCancel: hideOverlay,
-                  onSubmit: _onSubmitNewProject,
-                ),
-              );
-            },
+  void _buildMenuBarItems() {
+    ref.read(workspaceMenuBarProvider.notifier).clear();
+    ref
+        .read(workspaceMenuBarProvider.notifier)
+        .add(
+          item: UIMenuBarItem(
+            label: 'Projects',
+            children: [
+              UIMenuBarItem(label: 'New', icon: Icons.add, onPressed: () {}),
+              UIMenuBarItem(
+                label: 'Open',
+                icon: Icons.open_in_new,
+                onPressed: () {
+                  showOverlay(
+                    OpenBitmapProjectOverlay(
+                      onCancel: hideOverlay,
+                      onOpen: _onOpenProject,
+                    ),
+                  );
+                },
+              ),
+              UIMenuBarItem(
+                label: 'Manage',
+                icon: Icons.manage_accounts,
+                onPressed: _onManageProjects,
+              ),
+            ],
           ),
-          UIMenuBarItem(
-            label: 'Open',
-            icon: Icons.open_in_new,
-            onPressed: () {
-              showOverlay(
-                OpenBitmapProjectOverlay(
-                  onCancel: hideOverlay,
-                  onOpen: _onOpenProject,
-                ),
-              );
-            },
-          ),
-          UIMenuBarItem(
-            label: 'Manage',
-            icon: Icons.manage_accounts,
-            onPressed: _onManageProjects,
-          ),
-        ],
-      ),
-      ...ref.watch(workspaceMenuBarProvider),
-      UIMenuBarItem(
-        label: 'Help',
-        children: [
-          UIMenuBarItem(label: 'About', icon: Icons.info),
-        ],
-      ),
-    ];
+        );
   }
 
   void _onManageProjects() {
@@ -167,16 +152,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
     hideOverlay();
   }
 
-  Future<void> _onTabClosed(int index) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final (success, error) = await ref
-        .read(workspaceProvider.notifier)
-        .remove(index);
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
-    }
-  }
-
   void _onTabPressed(int index) {
     ref.read(workspaceIndexProvider.notifier).index(index);
   }
@@ -184,16 +159,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
   Future<void> _onSave() async {
     final messenger = ScaffoldMessenger.of(context);
     final (success, error) = await ref.read(workspaceProvider.notifier).save();
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
-    }
-  }
-
-  Future<void> _onSaveAll() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final (success, error) = await ref
-        .read(workspaceProvider.notifier)
-        .saveAll();
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -216,6 +181,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _buildMenuBarItems();
       ref.read(bitmapProjectsProvider.notifier).loadAll();
     });
   }
@@ -225,7 +191,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
 
-    List<UIMenuBarItem> menuBarItems = _buildMenuBarItems();
+    final menuBarItems = ref.watch(workspaceMenuBarProvider);
     final bitmapProjects = ref.watch(bitmapProjectsProvider);
     final recentProjects = bitmapProjects.take(5).toList();
 
@@ -234,34 +200,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final projectScreen = ref
         .watch(workspaceProjectsProvider.notifier)
         .projectScreen;
-
-    if (projectScreen != null) {
-      menuBarItems = [
-        ...menuBarItems.sublist(0, 1),
-        UIMenuBarItem(
-          label: 'File',
-          icon: Icons.save,
-          children: [
-            UIMenuBarItem(
-              label: 'Save',
-              icon: Icons.save,
-              onPressed: _onSave,
-            ),
-            UIMenuBarItem(
-              label: 'Save All',
-              icon: Icons.save,
-              onPressed: _onSaveAll,
-            ),
-            UIMenuBarItem(
-              label: 'Close',
-              icon: Icons.close,
-              onPressed: () => _onTabClosed(workspaceIndex),
-            ),
-          ],
-        ),
-        ...menuBarItems.sublist(1),
-      ];
-    }
 
     return Scaffold(
       body: SafeArea(
@@ -338,7 +276,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
               child: UITabBar(
                 selectedIndex: workspaceIndex >= 0 ? workspaceIndex : null,
                 onPressed: _onTabPressed,
-                onClosed: _onTabClosed,
                 children: tabs,
               ),
             ),

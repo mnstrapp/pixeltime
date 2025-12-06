@@ -40,7 +40,9 @@ class _BitmapProjectLayersEditOverlayState
     final layer = widget.layer.copyWith(name: _nameController.text);
 
     try {
-      final (_, editError) = await layer.update();
+      final (_, editError) = await ref
+          .read(bitmapProjectLayersProvider.notifier)
+          .update(layer: layer, originalLayer: widget.layer);
       if (editError != null) {
         setState(() {
           _errorMessage = editError;

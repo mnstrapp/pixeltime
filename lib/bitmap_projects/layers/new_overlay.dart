@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
+import '../history_provider.dart';
 import 'layers_provider.dart';
 
 class BitmapProjectLayersNewOverlay extends ConsumerStatefulWidget {
@@ -43,7 +44,9 @@ class _BitmapProjectLayersNewOverlayState
     );
 
     try {
-      final (_, createError) = await layer.create();
+      final (_, createError) = await ref
+          .read(bitmapProjectLayersProvider.notifier)
+          .create(layer: layer);
       if (createError != null) {
         setState(() {
           _errorMessage = createError;

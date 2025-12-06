@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/database.dart';
@@ -16,6 +17,11 @@ class BitmapProjectLayer {
     required this.position,
     this.visible = true,
   });
+
+  @override
+  String toString() {
+    return toMap().toString();
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -53,7 +59,7 @@ class BitmapProjectLayer {
 
   Future<(bool, String?)> create() async {
     final db = await getDatabase();
-    id = const Uuid().v4();
+    id ??= const Uuid().v4();
     try {
       final result = await db.insert('layers', toMap());
       if (result == 0) {
@@ -93,7 +99,7 @@ class BitmapProjectLayer {
 
   Future<(bool, String?)> reorder(int newPosition) async {
     if (id == null) {
-      return (false, 'Layer not found in database');
+      return (false, 'Layer missing id');
     }
 
     try {
@@ -135,14 +141,11 @@ class BitmapProjectLayer {
     }
     final db = await getDatabase();
     try {
-      final result = await db.delete(
+      await db.delete(
         'layers',
         where: 'id = ?',
         whereArgs: [id],
       );
-      if (result == 0) {
-        return (false, 'Error deleting layer');
-      }
       return (true, null);
     } catch (e) {
       return (false, 'Error deleting layer: $e');

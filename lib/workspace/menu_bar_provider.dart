@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../ui/menu_bar.dart';
@@ -14,19 +13,19 @@ class WorkspaceMenuBarNotifier extends Notifier<List<UIMenuBarItem>> {
     return [];
   }
 
-  (UIMenuBarItem, String?) add({
-    required String label,
-    IconData? icon,
-    VoidCallback? onPressed,
-    List<UIMenuBarItem> children = const [],
+  (bool, String?) add({
+    required UIMenuBarItem item,
   }) {
-    final item = UIMenuBarItem(
-      label: label,
-      icon: icon,
-      onPressed: onPressed,
-      children: children,
-    );
     state = [...state, item];
-    return (item, null);
+    return (true, null);
+  }
+
+  void clear() {
+    state = [];
+  }
+
+  void remove({required String label}) {
+    print('remove $label');
+    state = state.where((i) => i.label != label).toList();
   }
 }

@@ -6,7 +6,6 @@ class UITabBarItem extends StatelessWidget {
   final String label;
   final IconData? icon;
   final VoidCallback? onPressed;
-  final VoidCallback? onClosed;
   final bool isSelected;
 
   const UITabBarItem({
@@ -14,7 +13,6 @@ class UITabBarItem extends StatelessWidget {
     required this.label,
     this.icon,
     this.onPressed,
-    this.onClosed,
     this.isSelected = false,
   });
 
@@ -28,7 +26,6 @@ class UITabBarItem extends StatelessWidget {
     label: label ?? this.label,
     icon: icon ?? this.icon,
     onPressed: onPressed ?? this.onPressed,
-    onClosed: onClosed ?? this.onClosed,
     isSelected: isSelected ?? this.isSelected,
   );
 
@@ -60,17 +57,6 @@ class UITabBarItem extends StatelessWidget {
                   : BaseColors.primaryContainerContrastColor,
             ),
           ),
-          if (onClosed != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: InkWell(
-                onTap: onClosed,
-                child: Icon(
-                  Icons.close,
-                  size: BaseTheme.iconSizeSmall,
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -80,14 +66,12 @@ class UITabBarItem extends StatelessWidget {
 class UITabBar extends StatelessWidget {
   final List<UITabBarItem> children;
   final Function(int) onPressed;
-  final Function(int)? onClosed;
   final int? selectedIndex;
 
   const UITabBar({
     super.key,
     this.children = const [],
     required this.onPressed,
-    this.onClosed,
     this.selectedIndex = 0,
   });
 
@@ -110,7 +94,6 @@ class UITabBar extends StatelessWidget {
               onTap: () => onPressed(children.indexOf(child)),
               child: child.copyWith(
                 isSelected: selectedIndex == children.indexOf(child),
-                onClosed: () => onClosed?.call(children.indexOf(child)),
               ),
             ),
           ),

@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
+import '../../workspace/workspace_provider.dart';
+import '../history_provider.dart';
+import 'layer_history_event.dart';
 
 final bitmapProjectLayersProvider =
     NotifierProvider<BitmapProjectLayersNotifier, List<BitmapProjectLayer>>(() {
@@ -27,26 +31,76 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     return (true, null);
   }
 
-  (bool, String?) add({
+  Future<(bool, String?)> refresh() async {
+    final (project, currentProjectError) = ref
+        .read(workspaceProvider.notifier)
+        .currentProject();
+    if (currentProjectError != null) {
+      return (false, currentProjectError);
+    }
+    return loadAll(project: project!);
+  }
+
+  Future<(bool, String?)> create({
     required BitmapProjectLayer layer,
-  }) {
-    state = [...state, layer];
-    return (true, null);
+  }) async {
+    final event = LayerAddHistoryEvent(
+      layer: layer,
+      onExecute: () async {
+        return refresh();
+      },
+      onUndo: () async {
+        return refresh();
+      },
+    );
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+  }
+
+  Future<(bool, String?)> update({
+    required BitmapProjectLayer layer,
+    required BitmapProjectLayer originalLayer,
+  }) async {
+    final event = LayerUpdateHistoryEvent(
+      layer: layer,
+      originalLayer: originalLayer,
+      onExecute: () async {
+        return refresh();
+      },
+      onUndo: () async {
+        return refresh();
+      },
+    );
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+  }
+
+  Future<(bool, String?)> delete({
+    required BitmapProjectLayer layer,
+  }) async {
+    final event = LayerDeleteHistoryEvent(
+      layer: layer,
+      onExecute: () async {
+        return refresh();
+      },
+      onUndo: () async {
+        return refresh();
+      },
+    );
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
 
   Future<(bool, String?)> toggleVisibility({
     required BitmapProjectLayer layer,
   }) async {
-    final (_, error) = await layer.toggleVisibility();
-    if (error != null) {
-      return (false, error);
-    }
-    state = state
-        .map(
-          (l) => l.id == layer.id ? layer.copyWith(visible: !layer.visible) : l,
-        )
-        .toList();
-    return (true, null);
+    final event = LayerToggleVisibilityHistoryEvent(
+      layer: layer,
+      onExecute: () async {
+        return refresh();
+      },
+      onUndo: () async {
+        return refresh();
+      },
+    );
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
 
   Future<(bool, String?)> drag({
@@ -54,17 +108,6 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     required int newPosition,
   }) async {
     return await layer.reorder(newPosition);
-  }
-
-  Future<(bool, String?)> delete({
-    required BitmapProjectLayer layer,
-  }) async {
-    final (_, error) = await layer.delete();
-    if (error != null) {
-      return (false, error);
-    }
-    state = state.where((l) => l.id != layer.id).toList();
-    return refreshOrder();
   }
 
   Future<(bool, String?)> refreshOrder() async {

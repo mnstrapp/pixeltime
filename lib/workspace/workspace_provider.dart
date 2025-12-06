@@ -144,4 +144,13 @@ class WorkspaceNotifier extends Notifier<bool> {
     }
     return (true, null);
   }
+
+  (BitmapProject?, String?) currentProject() {
+    final index = ref.read(workspaceIndexProvider);
+    if (index < 0) {
+      return (null, 'No project opened');
+    }
+    final project = ref.read(workspaceProjectsProvider)[index].project;
+    return (project, null);
+  }
 }
