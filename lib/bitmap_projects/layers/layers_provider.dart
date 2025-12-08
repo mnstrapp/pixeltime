@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/bitmap_project.dart';
@@ -103,17 +102,10 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
 
-  Future<(bool, String?)> drag({
-    required BitmapProjectLayer layer,
-    required int newPosition,
-  }) async {
-    return await layer.reorder(newPosition);
-  }
-
   Future<(bool, String?)> refreshOrder() async {
     for (var i = 0; i < state.length; i++) {
       final layer = state[i];
-      final (_, error) = await (layer as BitmapProjectLayer).reorder(i);
+      final (_, error) = await layer.reorder(i);
       if (error != null) {
         return (false, error);
       }
@@ -125,10 +117,16 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     required BitmapProjectLayer layer,
     required int newPosition,
   }) async {
-    final (_, error) = await layer.reorder(newPosition);
-    if (error != null) {
-      return (false, error);
-    }
-    return await refresh();
+    final event = LayerReorderHistoryEvent(
+      layer: layer,
+      newPosition: newPosition,
+      onExecute: () async {
+        return refresh();
+      },
+      onUndo: () async {
+        return refresh();
+      },
+    );
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
 }

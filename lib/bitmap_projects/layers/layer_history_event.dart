@@ -163,3 +163,38 @@ class LayerUpdateHistoryEvent implements HistoryEvent {
     }.toString();
   }
 }
+
+class LayerReorderHistoryEvent implements HistoryEvent {
+  @override
+  final Future<(bool, String?)> Function() onExecute;
+  @override
+  final Future<(bool, String?)> Function() onUndo;
+  final BitmapProjectLayer layer;
+  final BitmapProjectLayer oldLayer;
+  final int newPosition;
+
+  LayerReorderHistoryEvent({
+    required this.layer,
+    required this.newPosition,
+    required this.onExecute,
+    required this.onUndo,
+  }) : oldLayer = layer.copyWith();
+
+  @override
+  Future<(bool, String?)> execute() async {
+    final (_, reorderError) = await layer.reorder(newPosition);
+    if (reorderError != null) {
+      return (false, reorderError);
+    }
+    return await onExecute();
+  }
+
+  @override
+  Future<(bool, String?)> undo() async {
+    final (_, reorderError) = await layer.reorder(oldLayer.position);
+    if (reorderError != null) {
+      return (false, reorderError);
+    }
+    return await onUndo();
+  }
+}
