@@ -147,21 +147,17 @@ class _LayerListState extends ConsumerState<_LayerList> {
         borderRadius: BorderRadius.circular(BaseTheme.borderRadiusSmall),
       ),
       child: SingleChildScrollView(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              children: [
-                ...layers.map(
-                  (layer) => _LayerItem(
-                    layer: layer,
-                    onToggleVisibility: () => _onToggleVisibility(layer),
-                    onDropped: (droppedLayer, layer) =>
-                        _onDropped(droppedLayer, layer),
-                    onEdit: () => _onEdit(layer),
-                    onDelete: () => _onDelete(layer),
-                  ),
-                ),
-              ],
+            ...layers.map(
+              (layer) => _LayerItem(
+                layer: layer,
+                onToggleVisibility: () => _onToggleVisibility(layer),
+                onDropped: (droppedLayer, layer) =>
+                    _onDropped(droppedLayer, layer),
+                onEdit: () => _onEdit(layer),
+                onDelete: () => _onDelete(layer),
+              ),
             ),
           ],
         ),
