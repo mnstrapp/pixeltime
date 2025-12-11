@@ -16,7 +16,7 @@ class LayerAddHistoryEvent implements HistoryEvent {
 
   @override
   Future<(bool, String?)> execute() async {
-    final (_, saveError) = await layer.save();
+    final (_, saveError) = await layer.create();
     if (saveError != null) {
       return (false, saveError);
     }

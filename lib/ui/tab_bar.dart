@@ -78,7 +78,8 @@ class UITabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.all(BaseTheme.borderRadiusSmall),
+      padding: EdgeInsets.all(BaseTheme.borderRadiusSmall),
       decoration: BoxDecoration(
         color: BaseColors.primaryContainerColor,
         borderRadius: BorderRadius.circular(BaseTheme.borderRadiusSmall),
@@ -87,7 +88,7 @@ class UITabBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
-        spacing: 8,
+        spacing: BaseTheme.borderRadiusSmall,
         children: [
           ...children.map(
             (child) => InkWell(

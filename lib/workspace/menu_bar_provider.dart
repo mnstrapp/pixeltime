@@ -8,24 +8,42 @@ final workspaceMenuBarProvider =
     });
 
 class WorkspaceMenuBarNotifier extends Notifier<List<UIMenuBarItem>> {
+  final prefix = <UIMenuBarItem>[];
+  final suffix = <UIMenuBarItem>[];
+
   @override
   List<UIMenuBarItem> build() {
     return [];
   }
 
-  (bool, String?) add({
+  (bool, String?) addPrefix({
     required UIMenuBarItem item,
   }) {
-    state = [...state, item];
+    prefix.add(item);
+    state = [...prefix, ...suffix];
     return (true, null);
   }
 
-  void clear() {
-    state = [];
+  void addSuffix({
+    required UIMenuBarItem item,
+  }) {
+    suffix.add(item);
+    state = [...prefix, ...suffix];
   }
 
-  void remove({required String label}) {
-    print('remove $label');
-    state = state.where((i) => i.label != label).toList();
+  void clear() {
+    prefix.clear();
+    suffix.clear();
+    state = [...prefix, ...suffix];
+  }
+
+  void clearPrefix() {
+    prefix.clear();
+    state = [...prefix, ...suffix];
+  }
+
+  void clearSuffix() {
+    suffix.clear();
+    state = [...prefix, ...suffix];
   }
 }

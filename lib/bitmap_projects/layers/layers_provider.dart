@@ -102,17 +102,6 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
 
-  Future<(bool, String?)> refreshOrder() async {
-    for (var i = 0; i < state.length; i++) {
-      final layer = state[i];
-      final (_, error) = await layer.reorder(i);
-      if (error != null) {
-        return (false, error);
-      }
-    }
-    return (true, null);
-  }
-
   Future<(bool, String?)> reorder({
     required BitmapProjectLayer layer,
     required int newPosition,

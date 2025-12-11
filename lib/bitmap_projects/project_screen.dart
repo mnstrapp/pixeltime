@@ -2,152 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/bitmap_project.dart';
-import '../ui/menu_bar.dart';
 import '../ui/theme.dart';
-import '../workspace/index_provider.dart';
-import '../workspace/menu_bar_provider.dart';
-import '../workspace/workspace_provider.dart';
-import 'history.dart';
-import 'history_provider.dart';
 import 'layers/layers_widget.dart';
 
-class BitmapProjectScreen extends ConsumerStatefulWidget {
+class BitmapProjectScreen extends ConsumerWidget {
   final BitmapProject project;
   const BitmapProjectScreen({super.key, required this.project});
 
   @override
-  ConsumerState<BitmapProjectScreen> createState() =>
-      BitmapProjectScreenState();
-
-  static BitmapProjectScreenState of(BuildContext context) {
-    final state = context.findAncestorStateOfType<BitmapProjectScreenState>();
-    if (state == null) {
-      throw Exception('BitmapProjectScreen not found in context');
-    }
-    return state;
-  }
-}
-
-class BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen> {
-  final _horizontalScrollController = ScrollController();
-  final _verticalScrollController = ScrollController();
-
-  UIMenuBarItem? _fileMenuBarItem;
-  UIMenuBarItem? _editMenuBarItem;
-
-  void _onSave() {
-    ref.read(workspaceProvider.notifier).save();
-  }
-
-  void _close() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final (_, error) = await ref
-        .read(workspaceProvider.notifier)
-        .remove(ref.read(workspaceIndexProvider));
-    _cleanMenuBar();
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
-    }
-    ref.read(bitmapProjectHistoryProvider.notifier).clear();
-  }
-
-  void _buildMenuBar() {
-    ref
-        .read(workspaceMenuBarProvider.notifier)
-        .add(
-          item: _fileMenuBarItem!,
-        );
-    ref
-        .read(workspaceMenuBarProvider.notifier)
-        .add(
-          item: _editMenuBarItem!,
-        );
-  }
-
-  void _undo() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final history = ref.read(bitmapProjectHistoryProvider);
-    if (!history.canUndo) {
-      messenger.showSnackBar(SnackBar(content: Text('No events to undo')));
-      return;
-    }
-    final (_, error) = await history.undo();
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
-    }
-  }
-
-  void _redo() async {
-    final messenger = ScaffoldMessenger.of(context);
-    final history = ref.read(bitmapProjectHistoryProvider);
-    if (!history.canRedo) {
-      messenger.showSnackBar(SnackBar(content: Text('No events to redo')));
-      return;
-    }
-    final (_, error) = await history.redo();
-    if (error != null) {
-      messenger.showSnackBar(SnackBar(content: Text(error)));
-    }
-  }
-
-  void _cleanMenuBar() {
-    if (_fileMenuBarItem != null) {
-      ref
-          .read(workspaceMenuBarProvider.notifier)
-          .remove(label: _fileMenuBarItem!.label);
-      _fileMenuBarItem = null;
-    }
-    if (_editMenuBarItem != null) {
-      ref
-          .read(workspaceMenuBarProvider.notifier)
-          .remove(label: _editMenuBarItem!.label);
-      _editMenuBarItem = null;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final history = ref.read(bitmapProjectHistoryProvider);
-      _fileMenuBarItem = UIMenuBarItem(
-        label: 'File',
-        icon: Icons.save,
-        children: [
-          UIMenuBarItem(label: 'Save', icon: Icons.save, onPressed: _onSave),
-          UIMenuBarItem(label: 'Close', icon: Icons.close, onPressed: _close),
-        ],
-      );
-      _editMenuBarItem = UIMenuBarItem(
-        label: 'Edit',
-        icon: Icons.edit,
-        children: [
-          UIMenuBarItem(
-            label: 'Undo',
-            icon: Icons.undo,
-            onPressed: _undo,
-          ),
-          UIMenuBarItem(
-            label: 'Redo',
-            icon: Icons.redo,
-            onPressed: _redo,
-          ),
-        ],
-      );
-      _buildMenuBar();
-    });
-  }
-
-  @override
-  void dispose() {
-    _horizontalScrollController.dispose();
-    _verticalScrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final project = widget.project;
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.sizeOf(context);
 
     return Stack(

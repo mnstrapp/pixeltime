@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/project_screen.dart';
@@ -14,10 +15,14 @@ final workspaceProvider = NotifierProvider<WorkspaceNotifier, bool>(() {
 class WorkspaceNotifier extends Notifier<bool> {
   @override
   bool build() {
-    return false;
+    return true;
   }
 
   (bool, String?) add(BitmapProject project) {
+    int workspaceIndex = ref.read(workspaceIndexProvider);
+    debugPrint('[workspaceProvider] workspaceIndex: ${workspaceIndex + 1}');
+    ref.read(workspaceIndexProvider.notifier).index(workspaceIndex + 1);
+
     final (projectScreen, projectError) = ref
         .read(workspaceProjectsProvider.notifier)
         .add(projectScreen: BitmapProjectScreen(project: project));
@@ -31,11 +36,6 @@ class WorkspaceNotifier extends Notifier<bool> {
     if (tabError != null) {
       return (false, tabError);
     }
-
-    final projectScreenIndex = ref.read(workspaceProjectsProvider).length - 1;
-    final _ = ref
-        .read(workspaceIndexProvider.notifier)
-        .index(projectScreenIndex);
 
     state = true;
     return (true, null);
@@ -135,6 +135,22 @@ class WorkspaceNotifier extends Notifier<bool> {
     final (_, deleteError) = await project.delete();
     if (deleteError != null) {
       return (false, deleteError);
+    }
+    final projects = ref.read(workspaceProjectsProvider);
+    final projectScreen = projects.firstWhere(
+      (projectScreen) => projectScreen.project.id == project.id,
+    );
+    final projectIndex = projects.indexOf(projectScreen);
+    if (projectIndex != -1) {
+      projects.removeAt(projectIndex);
+      final newIndex = (projects.isNotEmpty) ? 0 : -1;
+      ref.read(workspaceIndexProvider.notifier).index(newIndex);
+      ref.read(workspaceProjectsProvider.notifier).remove(projectIndex);
+      ref.read(workspaceTabsProvider.notifier).remove(projectIndex);
+    }
+    final tabs = ref.read(workspaceTabsProvider);
+    if (tabs.isEmpty) {
+      ref.read(workspaceIndexProvider.notifier).index(-1);
     }
     final (_, loadError) = await ref
         .read(bitmapProjectsProvider.notifier)

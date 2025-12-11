@@ -21,10 +21,10 @@ class WorkspaceProjectsNotifier extends Notifier<List<BitmapProjectScreen>> {
     return (projectScreen, null);
   }
 
-  BitmapProjectScreen? get projectScreen =>
-      ref.read(workspaceIndexProvider) >= 0
-      ? state[ref.read(workspaceIndexProvider)]
-      : null;
+  BitmapProjectScreen? get projectScreen {
+    final index = ref.read(workspaceIndexProvider);
+    return (index >= 0 && state.isNotEmpty) ? state[index] : null;
+  }
 
   void remove(int index) {
     state = state
