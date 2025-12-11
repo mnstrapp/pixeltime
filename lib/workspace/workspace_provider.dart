@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/material.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/project_screen.dart';
@@ -20,7 +19,6 @@ class WorkspaceNotifier extends Notifier<bool> {
 
   (bool, String?) add(BitmapProject project) {
     int workspaceIndex = ref.read(workspaceIndexProvider);
-    debugPrint('[workspaceProvider] workspaceIndex: ${workspaceIndex + 1}');
     ref.read(workspaceIndexProvider.notifier).index(workspaceIndex + 1);
 
     final (projectScreen, projectError) = ref

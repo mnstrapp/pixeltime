@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/material.dart';
 
 final workspaceIndexProvider = NotifierProvider<WorkspaceIndexNotifier, int>(
   () {
@@ -12,7 +11,6 @@ class WorkspaceIndexNotifier extends Notifier<int> {
   int build() => -1;
 
   int index(int index) {
-    debugPrint('[workspaceIndexNotifier] index: $index');
     state = index;
     return index;
   }
