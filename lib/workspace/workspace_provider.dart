@@ -136,18 +136,22 @@ class WorkspaceNotifier extends Notifier<bool> {
     if (deleteError != null) {
       return (false, deleteError);
     }
+
     final projects = ref.read(workspaceProjectsProvider);
-    final projectScreen = projects.firstWhere(
-      (projectScreen) => projectScreen.project.id == project.id,
-    );
-    final projectIndex = projects.indexOf(projectScreen);
-    if (projectIndex != -1) {
-      projects.removeAt(projectIndex);
-      final newIndex = (projects.isNotEmpty) ? 0 : -1;
-      ref.read(workspaceIndexProvider.notifier).index(newIndex);
-      ref.read(workspaceProjectsProvider.notifier).remove(projectIndex);
-      ref.read(workspaceTabsProvider.notifier).remove(projectIndex);
+    if (projects.isNotEmpty) {
+      final projectScreen = projects.firstWhere(
+        (projectScreen) => projectScreen.project.id == project.id,
+      );
+      final projectIndex = projects.indexOf(projectScreen);
+      if (projectIndex != -1) {
+        projects.removeAt(projectIndex);
+        final newIndex = (projects.isNotEmpty) ? 0 : -1;
+        ref.read(workspaceIndexProvider.notifier).index(newIndex);
+        ref.read(workspaceProjectsProvider.notifier).remove(projectIndex);
+        ref.read(workspaceTabsProvider.notifier).remove(projectIndex);
+      }
     }
+
     final tabs = ref.read(workspaceTabsProvider);
     if (tabs.isEmpty) {
       ref.read(workspaceIndexProvider.notifier).index(-1);

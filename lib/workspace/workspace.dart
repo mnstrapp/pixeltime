@@ -70,7 +70,10 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 onPressed: () {
                   showOverlay(
                     NewBitmapProjectOverlay(
-                      onCancel: hideOverlay,
+                      onCancel: () {
+                        ref.read(bitmapProjectsProvider.notifier).loadAll();
+                        hideOverlay();
+                      },
                       onSubmit: _onSubmitNewProject,
                     ),
                   );
@@ -82,7 +85,10 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 onPressed: () {
                   showOverlay(
                     OpenBitmapProjectOverlay(
-                      onCancel: hideOverlay,
+                      onCancel: () {
+                        ref.read(bitmapProjectsProvider.notifier).loadAll();
+                        hideOverlay();
+                      },
                       onOpen: _onOpenProject,
                     ),
                   );
@@ -101,7 +107,10 @@ class WorkspaceState extends ConsumerState<Workspace> {
   void _onManageProjects() {
     showOverlay(
       ManageProjectsOverlay(
-        onCancel: hideOverlay,
+        onCancel: () {
+          ref.read(bitmapProjectsProvider.notifier).loadAll();
+          hideOverlay();
+        },
         onTapProject: _onOpenProject,
         onEditProject: _onEditProject,
         onDeleteProject: _onDeleteProject,
@@ -126,7 +135,10 @@ class WorkspaceState extends ConsumerState<Workspace> {
     showOverlay(
       DeleteBitmapProjectOverlay(
         project: project,
-        onCancel: hideOverlay,
+        onCancel: () {
+          ref.read(bitmapProjectsProvider.notifier).loadAll();
+          hideOverlay();
+        },
         onDelete: _onDeleteProjectSubmit,
       ),
     );
@@ -172,6 +184,11 @@ class WorkspaceState extends ConsumerState<Workspace> {
   }
 
   void _buildProjectMenuBar() {
+    final projects = ref.read(workspaceProjectsProvider);
+    if (projects.isEmpty) {
+      ref.read(workspaceMenuBarProvider.notifier).clearSuffix();
+      return;
+    }
     ref.read(workspaceMenuBarProvider.notifier).clearSuffix();
     ref
         .read(workspaceMenuBarProvider.notifier)
@@ -192,6 +209,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
                     messenger.showSnackBar(SnackBar(content: Text(error)));
                   }
                   ref.read(workspaceMenuBarProvider.notifier).clearSuffix();
+                  _buildProjectMenuBar();
                 },
               ),
               UIMenuBarItem(
@@ -267,6 +285,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
         SnackBar(content: Text(addProjectError)),
       );
     }
+    _buildProjectMenuBar();
     hideOverlay();
   }
 

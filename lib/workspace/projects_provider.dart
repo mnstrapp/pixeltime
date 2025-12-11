@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 
 import '../bitmap_projects/project_screen.dart';
 import 'index_provider.dart';
@@ -22,7 +23,21 @@ class WorkspaceProjectsNotifier extends Notifier<List<BitmapProjectScreen>> {
   }
 
   BitmapProjectScreen? get projectScreen {
+    if (state.isEmpty) {
+      debugPrint('[workspaceProjectsProvider] state is empty');
+      return null;
+    }
     final index = ref.read(workspaceIndexProvider);
+    if (index < 0) {
+      debugPrint('[workspaceProjectsProvider] index is less than 0');
+      return null;
+    }
+    if (index > state.length - 1) {
+      debugPrint(
+        '[workspaceProjectsProvider] index is greater than state length',
+      );
+      return null;
+    }
     return (index >= 0 && state.isNotEmpty) ? state[index] : null;
   }
 
