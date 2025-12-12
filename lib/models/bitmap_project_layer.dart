@@ -106,7 +106,6 @@ class BitmapProjectLayer {
       if (findError != null) {
         return (false, findError);
       }
-
       final currentIndex = layers.indexWhere((layer) => layer.id == id);
       if (currentIndex == -1) {
         return (false, 'Layer not found in project');

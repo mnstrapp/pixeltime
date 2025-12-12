@@ -153,8 +153,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
               (layer) => _LayerItem(
                 layer: layer,
                 onToggleVisibility: () => _onToggleVisibility(layer),
-                onDropped: (droppedLayer, layer) =>
-                    _onDropped(droppedLayer, layer),
+                onDropped: _onDropped,
                 onEdit: () => _onEdit(layer),
                 onDelete: () => _onDelete(layer),
               ),
