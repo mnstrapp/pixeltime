@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
+import '../bitmap_projects/layers/layers_provider.dart';
 import '../bitmap_projects/delete_overlay.dart';
 import '../bitmap_projects/edit_overlay.dart';
 import '../bitmap_projects/history_provider.dart';
@@ -166,7 +167,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
     );
   }
 
-  void _onOpenProject(BitmapProject project) {
+  Future<void> _onOpenProject(BitmapProject project) async {
     final messenger = ScaffoldMessenger.of(context);
     final (_, addProjectError) = ref
         .read(workspaceProvider.notifier)
@@ -175,12 +176,25 @@ class WorkspaceState extends ConsumerState<Workspace> {
       messenger.showSnackBar(SnackBar(content: Text(addProjectError)));
     }
     _buildProjectMenuBar();
+    final (_, error) = await ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .loadAll(project: project);
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
     hideOverlay();
   }
 
-  void _openProject(BitmapProject project) {
+  Future<void> _openProject(BitmapProject project) async {
+    final messenger = ScaffoldMessenger.of(context);
     ref.read(workspaceProvider.notifier).add(project);
     _buildProjectMenuBar();
+    final (_, error) = await ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .loadAll(project: project);
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
   }
 
   void _buildProjectMenuBar() {
@@ -210,6 +224,17 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   }
                   ref.read(workspaceMenuBarProvider.notifier).clearSuffix();
                   _buildProjectMenuBar();
+                  final projectScreen = ref
+                      .read(workspaceProjectsProvider.notifier)
+                      .projectScreen;
+                  if (projectScreen != null) {
+                    final (_, error) = await ref
+                        .read(bitmapProjectLayersProvider.notifier)
+                        .loadAll(project: projectScreen.project);
+                    if (error != null) {
+                      messenger.showSnackBar(SnackBar(content: Text(error)));
+                    }
+                  }
                 },
               ),
               UIMenuBarItem(
@@ -270,9 +295,21 @@ class WorkspaceState extends ConsumerState<Workspace> {
         );
   }
 
-  void _onTabPressed(int index) {
+  Future<void> _onTabPressed(int index) async {
+    final messenger = ScaffoldMessenger.of(context);
     ref.read(workspaceIndexProvider.notifier).index(index);
     _buildProjectMenuBar();
+    final projectScreen = ref
+        .read(workspaceProjectsProvider.notifier)
+        .projectScreen;
+    if (projectScreen != null) {
+      final (_, error) = await ref
+          .read(bitmapProjectLayersProvider.notifier)
+          .loadAll(project: projectScreen.project);
+      if (error != null) {
+        messenger.showSnackBar(SnackBar(content: Text(error)));
+      }
+    }
   }
 
   void _onSubmitNewProject(BitmapProject project) {
