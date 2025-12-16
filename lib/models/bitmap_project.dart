@@ -1,7 +1,7 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/database.dart';
+import 'bitmap_project_layer.dart';
 
 class BitmapProject {
   String? id;
@@ -9,6 +9,7 @@ class BitmapProject {
   String description;
   String? createdAt;
   String? updatedAt;
+  List<BitmapProjectLayer> layers = [];
 
   BitmapProject({
     this.id,
@@ -124,9 +125,34 @@ class BitmapProject {
       final projects = result
           .map((project) => BitmapProject.fromMap(project))
           .toList();
+      for (final project in projects) {
+        final findLayersError = await project.loadAllLayers();
+        if (findLayersError != null) {
+          return (<BitmapProject>[], findLayersError);
+        }
+      }
       return (projects, null);
     } catch (e) {
       return (<BitmapProject>[], 'Error finding all projects: $e');
+    }
+  }
+
+  Future<String?> loadAllLayers() async {
+    final db = await getDatabase();
+    try {
+      final result = await db.query(
+        'layers',
+        where: 'project_id = ?',
+        whereArgs: [id],
+        orderBy: 'position ASC',
+      );
+      final foundLayers = result
+          .map((layer) => BitmapProjectLayer.fromMap(layer))
+          .toList();
+      layers = foundLayers;
+      return null;
+    } catch (e) {
+      return 'Error finding all layers: $e';
     }
   }
 }

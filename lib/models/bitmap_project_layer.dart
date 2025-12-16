@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/database.dart';
@@ -8,6 +11,11 @@ class BitmapProjectLayer {
   String projectId;
   int position;
   bool visible;
+  int width;
+  int height;
+  int x;
+  int y;
+  List<List<Color>> data = [];
 
   BitmapProjectLayer({
     this.id,
@@ -15,7 +23,21 @@ class BitmapProjectLayer {
     required this.projectId,
     required this.position,
     this.visible = true,
-  });
+    this.width = 100,
+    this.height = 100,
+    this.x = 0,
+    this.y = 0,
+    List<List<Color>>? canvas,
+  }) {
+    if (canvas == null || canvas.isEmpty) {
+      data = List.generate(
+        height,
+        (index) => List.generate(width, (index) => Colors.transparent),
+      );
+    } else {
+      data = canvas;
+    }
+  }
 
   @override
   String toString() {
@@ -29,23 +51,52 @@ class BitmapProjectLayer {
       'project_id': projectId,
       'position': position,
       'visible': visible ? 1 : 0,
+      'width': width,
+      'height': height,
+      'x': x,
+      'y': y,
+      'data': json
+          .encode(
+            data
+                .map((row) => row.map((pixel) => pixel.toARGB32()).toList())
+                .toList(),
+          )
+          .toString(),
     };
   }
 
   factory BitmapProjectLayer.fromMap(Map<String, dynamic> map) {
-    return BitmapProjectLayer(
+    var layer = BitmapProjectLayer(
       id: map['id'],
       name: map['name'],
       projectId: map['project_id'],
       position: map['position'],
       visible: map['visible'] == 1 ? true : false,
+      width: map['width'],
+      height: map['height'],
+      x: map['x'],
+      y: map['y'],
     );
+    final dataMap = json.decode(map['data']);
+    for (final row in dataMap) {
+      final rowData = <Color>[];
+      for (final pixel in row) {
+        rowData.add(Color(pixel));
+      }
+      layer.data.add(rowData);
+    }
+    return layer;
   }
 
   BitmapProjectLayer copyWith({
     String? name,
     int? position,
     bool? visible,
+    int? width,
+    int? height,
+    int? x,
+    int? y,
+    List<List<Color>>? canvas,
   }) {
     return BitmapProjectLayer(
       id: id,
@@ -53,6 +104,11 @@ class BitmapProjectLayer {
       projectId: projectId,
       position: position ?? this.position,
       visible: visible ?? this.visible,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      x: x ?? this.x,
+      y: y ?? this.y,
+      canvas: canvas ?? data,
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/bitmap_project.dart';
 import '../ui/theme.dart';
 import 'layers/layers_widget.dart';
+import 'tools/tools_widget.dart';
 
 class BitmapProjectScreen extends ConsumerWidget {
   final BitmapProject project;
@@ -11,27 +12,37 @@ class BitmapProjectScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final size = MediaQuery.sizeOf(context);
-
     return Stack(
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              width: size.width,
-              height: size.height,
-              color: Colors.white,
-              child: Center(child: Text(project.name)),
-            ),
+        Stack(
+          children: [
+            for (final layer in project.layers)
+              Positioned(
+                left: layer.x.toDouble(),
+                top: layer.y.toDouble(),
+                child: Container(
+                  width: layer.width.toDouble(),
+                  height: layer.height.toDouble(),
+                  color: Colors.red,
+                ),
+              ),
+          ],
+        ),
+        Positioned(
+          left: BaseTheme.borderRadiusMedium,
+          top: 0,
+          bottom: 0,
+          child: Center(
+            child: BitmapProjectToolsWidget(project: project),
           ),
         ),
         Positioned(
           right: BaseTheme.borderRadiusMedium,
           top: 0,
           bottom: 0,
-          child: Center(child: BitmapProjectLayersWidget(project: project)),
+          child: Center(
+            child: BitmapProjectLayersWidget(project: project),
+          ),
         ),
       ],
     );
