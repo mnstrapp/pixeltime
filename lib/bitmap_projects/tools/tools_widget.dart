@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:pixeltime/bitmap_projects/tools/tools_provider.dart';
 
+import '../tools/tools_provider.dart';
 import '../../models/bitmap_project.dart';
 import '../../ui/theme.dart';
 
@@ -53,19 +53,12 @@ class BitmapProjectToolsWidget extends ConsumerWidget {
   }
 }
 
-class _ToolList extends ConsumerStatefulWidget {
+class _ToolList extends ConsumerWidget {
   final BitmapProject project;
   const _ToolList({required this.project});
 
   @override
-  ConsumerState<_ToolList> createState() => _ToolListState();
-}
-
-class _ToolListState extends ConsumerState<_ToolList> {
-  int selectedTool = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final color = theme.colorScheme.inversePrimary;
     final tools = <_ToolItem>[
@@ -105,81 +98,93 @@ class _ToolListState extends ConsumerState<_ToolList> {
         crossAxisCount: 3,
         mainAxisSpacing: BaseTheme.borderRadiusSmall,
         crossAxisSpacing: BaseTheme.borderRadiusSmall,
-        children: tools.map((tool) {
-          final index = tools.indexOf(tool);
-          return tool.copyWith(
-            selected: selectedTool == index,
-            onTap: () {
-              setState(() {
-                selectedTool = index;
-              });
-              tool.onTap();
-            },
-          );
-        }).toList(),
+        children: tools,
       ),
     );
   }
 }
 
-class _ToolItem extends ConsumerWidget {
+class _ToolItem extends ConsumerStatefulWidget {
   final String tooltip;
   final IconData icon;
   final VoidCallback onTap;
-  final bool selected;
   final BitmapProjectToolOptions options;
 
   const _ToolItem({
     required this.tooltip,
     required this.icon,
     required this.onTap,
-    this.selected = false,
     required this.options,
   });
 
   _ToolItem copyWith({
     VoidCallback? onTap,
-    bool? selected,
-    BitmapProjectToolOptions? options,
   }) => _ToolItem(
     tooltip: tooltip,
     icon: icon,
     onTap: onTap ?? this.onTap,
-    selected: selected ?? this.selected,
-    options: options ?? this.options,
+    options: options,
   );
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ToolItem> createState() => _ToolItemState();
+}
+
+class _ToolItemState extends ConsumerState<_ToolItem> {
+  void _setSelectedOptions() {
+    switch (widget.options) {
+      case BitmapProjectToolOptions.select:
+        ref
+            .read(bitmapProjectToolOptionsProvider.notifier)
+            .set(BitmapProjectToolSelectOptions());
+        break;
+      case BitmapProjectToolOptions.pencil:
+        ref
+            .read(bitmapProjectToolOptionsProvider.notifier)
+            .set(BitmapProjectToolPencilOptions());
+        break;
+      case BitmapProjectToolOptions.eraser:
+        ref
+            .read(bitmapProjectToolOptionsProvider.notifier)
+            .set(BitmapProjectToolEraserOptions());
+        break;
+      case BitmapProjectToolOptions.fill:
+        ref
+            .read(bitmapProjectToolOptionsProvider.notifier)
+            .set(BitmapProjectToolFillOptions());
+        break;
+    }
+  }
+
+  void _setSelected() {
+    ref.read(bitmapProjectToolSelectedProvider.notifier).set(widget.options);
+    _setSelectedOptions();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final selected =
+          ref.watch(bitmapProjectToolSelectedProvider) == widget.options;
+      if (selected) {
+        _setSelectedOptions();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final selected =
+        ref.watch(bitmapProjectToolSelectedProvider) == widget.options;
 
     return Tooltip(
-      message: tooltip,
+      message: widget.tooltip,
       child: InkWell(
         onTap: () {
-          onTap();
-          switch (options) {
-            case BitmapProjectToolOptions.select:
-              ref
-                  .read(bitmapProjectToolOptionsProvider.notifier)
-                  .set(BitmapProjectToolSelectOptions());
-              break;
-            case BitmapProjectToolOptions.pencil:
-              ref
-                  .read(bitmapProjectToolOptionsProvider.notifier)
-                  .set(BitmapProjectToolPencilOptions());
-              break;
-            case BitmapProjectToolOptions.eraser:
-              ref
-                  .read(bitmapProjectToolOptionsProvider.notifier)
-                  .set(BitmapProjectToolEraserOptions());
-              break;
-            case BitmapProjectToolOptions.fill:
-              ref
-                  .read(bitmapProjectToolOptionsProvider.notifier)
-                  .set(BitmapProjectToolFillOptions());
-              break;
-          }
+          widget.onTap();
+          _setSelected();
         },
         child: Container(
           decoration: BoxDecoration(
@@ -190,7 +195,7 @@ class _ToolItem extends ConsumerWidget {
           ),
           child: Center(
             child: Icon(
-              icon,
+              widget.icon,
               color: selected
                   ? theme.colorScheme.onPrimary
                   : theme.colorScheme.onSurface,

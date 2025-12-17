@@ -23,7 +23,7 @@ class BitmapProjectScreen extends ConsumerWidget {
                 child: Container(
                   width: layer.width.toDouble(),
                   height: layer.height.toDouble(),
-                  color: Colors.red,
+                  color: layer.data.first.first,
                 ),
               ),
           ],

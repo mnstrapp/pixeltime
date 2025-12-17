@@ -77,6 +77,10 @@ class UITabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       margin: EdgeInsets.all(BaseTheme.borderRadiusSmall),
       padding: EdgeInsets.all(BaseTheme.borderRadiusSmall),
