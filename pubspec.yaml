@@ -23,6 +23,7 @@ dependencies:
   universal_platform: ^1.1.0
   timeago: ^3.7.1
   material_symbols_icons: ^4.2874.0
+  conversion: ^1.0.0+1
 
 dev_dependencies:
   flutter_test:
