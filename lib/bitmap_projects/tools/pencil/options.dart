@@ -28,16 +28,36 @@ class BitmapProjectToolPencilOptions extends ConsumerWidget {
               InkWell(
                 onTap: () {
                   workspace.showOverlay(
-                    const BitmapProjectToolColorPickerOverlay(),
+                    BitmapProjectToolColorPickerOverlay(
+                      onColorSelected: (color) {
+                        ref
+                            .read(bitmapProjectToolColorProvider.notifier)
+                            .set(color);
+                        workspace.hideOverlay();
+                      },
+                      onCancelled: () {
+                        workspace.hideOverlay();
+                      },
+                    ),
                   );
                 },
                 child: Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: color,
+                    color: color != Colors.transparent ? color : null,
+                    image: color == Colors.transparent
+                        ? DecorationImage(
+                            image: AssetImage('assets/transparency.png'),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                     borderRadius: BorderRadius.circular(
                       BaseTheme.borderRadiusSmall,
+                    ),
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 2,
                     ),
                   ),
                 ),
