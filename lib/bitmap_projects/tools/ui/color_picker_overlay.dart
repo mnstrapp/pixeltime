@@ -141,8 +141,8 @@ class _BitmapProjectToolColorPickerOverlayState
     }
 
     return Container(
-      width: maxSize,
-      height: maxSize,
+      // height: size.height - maxSize * 2,
+      // width: size.width - maxSize * 2,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(BaseTheme.borderRadiusSmall),
@@ -278,47 +278,45 @@ class _BitmapProjectToolColorPickerOverlayState
               ),
             ),
           ),
-          SizedBox(
-            height: 85,
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 10,
-                mainAxisSpacing: BaseTheme.borderRadiusSmall,
-                crossAxisSpacing: BaseTheme.borderRadiusSmall,
-              ),
-              itemCount: previousColors.length,
-              itemBuilder: (context, index) {
-                final color = previousColors[index];
-                return InkWell(
-                  onTap: () => _onPreviousColorSelected(color),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(
-                        BaseTheme.borderRadiusSmall,
-                      ),
-                      border: Border.all(
-                        color: Colors.black,
-                        width: 2,
-                      ),
-                      image: color == Colors.transparent
-                          ? DecorationImage(
-                              image: AssetImage('assets/transparency.png'),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                  ),
-                );
-              },
+          GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 10,
+              mainAxisSpacing: BaseTheme.borderRadiusSmall,
+              crossAxisSpacing: BaseTheme.borderRadiusSmall,
             ),
+            itemCount: previousColors.length,
+            itemBuilder: (context, index) {
+              final color = previousColors[index];
+              return InkWell(
+                onTap: () => _onPreviousColorSelected(color),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(
+                      BaseTheme.borderRadiusSmall,
+                    ),
+                    border: Border.all(
+                      color: Colors.black,
+                      width: 2,
+                    ),
+                    image: color == Colors.transparent
+                        ? DecorationImage(
+                            image: AssetImage('assets/transparency.png'),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                ),
+              );
+            },
           ),
           Padding(
             padding: EdgeInsets.only(
-              bottom: BaseTheme.borderRadiusMedium,
-              top: BaseTheme.borderRadiusMedium,
+              bottom: BaseTheme.borderRadiusSmall,
+              top: BaseTheme.borderRadiusSmall,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

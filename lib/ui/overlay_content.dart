@@ -12,6 +12,13 @@ class OverlayContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
 
+    double margin = BaseTheme.borderRadiusLarge * 3;
+    if (size.width > BreakPoints.tabletBreakpoint) {
+      margin = size.width < size.height
+          ? size.width * 0.25
+          : size.height * 0.25;
+    }
+
     return Stack(
       children: [
         GestureDetector(
@@ -24,30 +31,21 @@ class OverlayContent extends StatelessWidget {
             ),
           ),
         ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              margin: EdgeInsets.only(
-                top: size.height * 0.33,
-                left: size.width * 0.33,
-                right: size.width * 0.33,
-                bottom: size.height * 0.33,
-              ),
-              padding: const EdgeInsets.only(
-                right: 16.0,
-                left: 16.0,
-              ),
-              decoration: BoxDecoration(
-                color: BaseColors.overlayColor,
-                borderRadius: BorderRadius.circular(
-                  BaseTheme.borderRadiusSmall,
-                ),
-              ),
-              child: child,
+        Center(
+          child: Container(
+            margin: EdgeInsets.all(margin),
+            padding: EdgeInsets.only(
+              right: BaseTheme.borderRadiusSmall,
+              left: BaseTheme.borderRadiusSmall,
             ),
-          ],
+            decoration: BoxDecoration(
+              color: BaseColors.overlayColor,
+              borderRadius: BorderRadius.circular(
+                BaseTheme.borderRadiusSmall,
+              ),
+            ),
+            child: child,
+          ),
         ),
       ],
     );
