@@ -136,6 +136,8 @@ class _BitmapProjectToolColorPickerOverlayState
       }
     }
 
+    final size = MediaQuery.sizeOf(context);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -244,6 +246,8 @@ class _BitmapProjectToolColorPickerOverlayState
               crossAxisCount: 10,
               mainAxisSpacing: BaseTheme.borderRadiusSmall,
               crossAxisSpacing: BaseTheme.borderRadiusSmall,
+              mainAxisExtent: 48,
+              childAspectRatio: 1.0,
             ),
             itemCount: previousColors.length,
             itemBuilder: (context, index) {
