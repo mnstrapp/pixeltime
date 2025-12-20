@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import 'package:window_manager/window_manager.dart';
 
 Future<ui.Image> buildTransperancyGrid(Size size, double scale) async {
   final gridSize = 10 * scale;
@@ -38,38 +39,28 @@ Future<ui.Image> buildTransperancyGrid(Size size, double scale) async {
   return image;
 }
 
-class TransparencyGrid extends StatefulWidget {
+class TransparencyGrid extends StatelessWidget {
   final Size size;
   final double scale;
 
   const TransparencyGrid({super.key, required this.size, this.scale = 1.0});
 
   @override
-  State<TransparencyGrid> createState() => _TransparencyGridState();
-}
-
-class _TransparencyGridState extends State<TransparencyGrid> {
-  ui.Image? _image;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final image = await buildTransperancyGrid(widget.size, widget.scale);
-      setState(() {
-        _image = image;
-      });
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_image == null) {
-      return const SizedBox.shrink();
-    }
-    return CustomPaint(
-      size: widget.size,
-      painter: _TransparencyPainter(image: _image!),
+    return FutureBuilder(
+      future: buildTransperancyGrid(size, scale),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox.shrink();
+        }
+        return CustomPaint(
+          size: Size(
+            snapshot.data!.width.toDouble(),
+            snapshot.data!.height.toDouble(),
+          ),
+          painter: _TransparencyPainter(image: snapshot.data!),
+        );
+      },
     );
   }
 }
