@@ -22,7 +22,6 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
   Size _size = Size.zero;
 
   Future<void> _resize() async {
-    debugPrint('resizing');
     final size = await windowManager.getSize();
     setState(() {
       _size = size;
@@ -46,13 +45,11 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
 
   @override
   void onWindowResize() {
-    debugPrint('onWindowResize');
     _resize();
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('size: $_size');
     if (_size == Size.zero) {
       return const SizedBox.shrink();
     }
