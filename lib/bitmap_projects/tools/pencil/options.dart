@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../ui/transparency_grid.dart';
 import '../../../workspace/workspace.dart';
 import '../color_provider.dart';
 import '../../../ui/theme.dart';
@@ -46,12 +47,6 @@ class BitmapProjectToolPencilOptions extends ConsumerWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: color != Colors.transparent ? color : null,
-                    image: color == Colors.transparent
-                        ? DecorationImage(
-                            image: AssetImage('assets/transparency.png'),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
                     borderRadius: BorderRadius.circular(
                       BaseTheme.borderRadiusSmall,
                     ),
@@ -60,6 +55,14 @@ class BitmapProjectToolPencilOptions extends ConsumerWidget {
                       width: 2,
                     ),
                   ),
+                  child: color == Colors.transparent
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            BaseTheme.borderRadiusSmall,
+                          ),
+                          child: TransparencyGrid(size: Size(44, 44)),
+                        )
+                      : null,
                 ),
               ),
             ],

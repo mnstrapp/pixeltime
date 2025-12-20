@@ -5,6 +5,7 @@ import '../models/bitmap_project.dart';
 import '../ui/theme.dart';
 import 'layers/layers_widget.dart';
 import 'tools/tools_widget.dart';
+import '../ui/transparency_grid.dart';
 
 class BitmapProjectScreen extends ConsumerWidget {
   final BitmapProject project;
@@ -12,39 +13,48 @@ class BitmapProjectScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Stack(
-      children: [
-        Stack(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(
+          constraints.maxWidth,
+          constraints.maxHeight,
+        );
+        return Stack(
           children: [
-            for (final layer in project.layers)
-              Positioned(
-                left: layer.x.toDouble(),
-                top: layer.y.toDouble(),
-                child: Container(
-                  width: layer.width.toDouble(),
-                  height: layer.height.toDouble(),
-                  color: layer.data.first.first,
-                ),
+            TransparencyGrid(size: size),
+            Stack(
+              children: [
+                for (final layer in project.layers)
+                  Positioned(
+                    left: layer.x.toDouble(),
+                    top: layer.y.toDouble(),
+                    child: Container(
+                      width: layer.width.toDouble(),
+                      height: layer.height.toDouble(),
+                      color: layer.data.first.first,
+                    ),
+                  ),
+              ],
+            ),
+            Positioned(
+              left: BaseTheme.borderRadiusMedium,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: BitmapProjectToolsWidget(project: project),
               ),
+            ),
+            Positioned(
+              right: BaseTheme.borderRadiusMedium,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: BitmapProjectLayersWidget(project: project),
+              ),
+            ),
           ],
-        ),
-        Positioned(
-          left: BaseTheme.borderRadiusMedium,
-          top: 0,
-          bottom: 0,
-          child: Center(
-            child: BitmapProjectToolsWidget(project: project),
-          ),
-        ),
-        Positioned(
-          right: BaseTheme.borderRadiusMedium,
-          top: 0,
-          bottom: 0,
-          child: Center(
-            child: BitmapProjectLayersWidget(project: project),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

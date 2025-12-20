@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../ui/theme.dart';
+import '../../../ui/transparency_grid.dart';
 import '../color_provider.dart';
 
 class BitmapProjectToolColorPickerOverlay extends ConsumerStatefulWidget {
@@ -120,11 +121,6 @@ class _BitmapProjectToolColorPickerOverlayState
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final maxSize = size.width < size.height
-        ? size.width * 0.33
-        : size.height * 0.33;
-
     final currentColor = ref.watch(bitmapProjectToolColorProvider);
     final previousColorsState = ref
         .watch(bitmapProjectToolPreviousColorsProvider)
@@ -141,141 +137,105 @@ class _BitmapProjectToolColorPickerOverlayState
     }
 
     return Container(
-      // height: size.height - maxSize * 2,
-      // width: size.width - maxSize * 2,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(BaseTheme.borderRadiusSmall),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text('Color Picker'),
-          Expanded(
-            child: Container(
-              margin: EdgeInsets.all(BaseTheme.borderRadiusSmall),
-              child: Row(
-                spacing: BaseTheme.borderRadiusSmall,
-                children: [
-                  Expanded(
-                    child: Column(
-                      spacing: BaseTheme.borderRadiusSmall,
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                BaseTheme.borderRadiusSmall,
-                              ),
-                              color: _color != Colors.transparent
-                                  ? _color
-                                  : null,
-                              image: _color == Colors.transparent
-                                  ? DecorationImage(
-                                      image: AssetImage(
-                                        'assets/transparency.png',
-                                      ),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
+          Container(
+            margin: EdgeInsets.all(BaseTheme.borderRadiusSmall),
+            child: Row(
+              spacing: BaseTheme.borderRadiusSmall,
+              children: [
+                Column(
+                  spacing: BaseTheme.borderRadiusSmall,
+                  children: [
+                    SizedBox(
+                      width: 200,
+                      height: 115,
+                      child: _ColorPickerColorItem(color: _color),
+                    ),
+                    SizedBox(
+                      width: 200,
+                      height: 115,
+                      child: _ColorPickerColorItem(color: currentColor),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Text('R'),
+                          Expanded(
+                            child: Slider(
+                              value: _redValue,
+                              onChanged: _setRedValue,
+                              min: 0.0,
+                              max: 255.0,
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                BaseTheme.borderRadiusSmall,
-                              ),
-                              color: currentColor != Colors.transparent
-                                  ? currentColor
-                                  : null,
-                              image: currentColor == Colors.transparent
-                                  ? DecorationImage(
-                                      image: AssetImage(
-                                        'assets/transparency.png',
-                                      ),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Text('G'),
+                          Expanded(
+                            child: Slider(
+                              value: _greenValue,
+                              onChanged: _setGreenValue,
+                              min: 0.0,
+                              max: 255.0,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Text('B'),
+                          Expanded(
+                            child: Slider(
+                              value: _blueValue,
+                              onChanged: _setBlueValue,
+                              min: 0.0,
+                              max: 255.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Text('A'),
+                          Expanded(
+                            child: Slider(
+                              value: _alphaValue,
+                              onChanged: _setAlphaValue,
+                              min: 0.0,
+                              max: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Text('Hex'),
+                          Expanded(
+                            child: TextField(
+                              controller: _hexController,
+                              onChanged: _setHexValue,
+                              onEditingComplete: () => _onColorSelected(_color),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            const Text('R'),
-                            Expanded(
-                              child: Slider(
-                                value: _redValue,
-                                onChanged: _setRedValue,
-                                min: 0.0,
-                                max: 255.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Text('G'),
-                            Expanded(
-                              child: Slider(
-                                value: _greenValue,
-                                onChanged: _setGreenValue,
-                                min: 0.0,
-                                max: 255.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Text('B'),
-                            Expanded(
-                              child: Slider(
-                                value: _blueValue,
-                                onChanged: _setBlueValue,
-                                min: 0.0,
-                                max: 255.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Text('A'),
-                            Expanded(
-                              child: Slider(
-                                value: _alphaValue,
-                                onChanged: _setAlphaValue,
-                                min: 0.0,
-                                max: 1.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Text('Hex'),
-                            Expanded(
-                              child: TextField(
-                                controller: _hexController,
-                                onChanged: _setHexValue,
-                                onEditingComplete: () =>
-                                    _onColorSelected(_color),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           GridView.builder(
@@ -290,26 +250,7 @@ class _BitmapProjectToolColorPickerOverlayState
               final color = previousColors[index];
               return InkWell(
                 onTap: () => _onPreviousColorSelected(color),
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(
-                      BaseTheme.borderRadiusSmall,
-                    ),
-                    border: Border.all(
-                      color: Colors.black,
-                      width: 2,
-                    ),
-                    image: color == Colors.transparent
-                        ? DecorationImage(
-                            image: AssetImage('assets/transparency.png'),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                ),
+                child: _ColorPickerGridItem(color: color),
               );
             },
           ),
@@ -336,6 +277,84 @@ class _BitmapProjectToolColorPickerOverlayState
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ColorPickerColorItem extends StatelessWidget {
+  final Color color;
+
+  const _ColorPickerColorItem({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(
+          constraints.maxWidth - 4.0,
+          constraints.maxHeight - 4.0,
+        );
+        return Container(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              BaseTheme.borderRadiusSmall,
+            ),
+            color: color != Colors.transparent ? color : null,
+          ),
+          child: color == Colors.transparent
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    BaseTheme.borderRadiusSmall,
+                  ),
+                  child: TransparencyGrid(
+                    size: size,
+                  ),
+                )
+              : null,
+        );
+      },
+    );
+  }
+}
+
+class _ColorPickerGridItem extends StatelessWidget {
+  final Color color;
+
+  const _ColorPickerGridItem({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(
+          constraints.maxWidth - 4.0,
+          constraints.maxHeight - 4.0,
+        );
+        return Container(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          decoration: BoxDecoration(
+            color: color != Colors.transparent ? color : null,
+            borderRadius: BorderRadius.circular(
+              BaseTheme.borderRadiusSmall,
+            ),
+            border: Border.all(
+              color: Colors.black,
+              width: 2,
+            ),
+          ),
+          child: color == Colors.transparent
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    BaseTheme.borderRadiusSmall,
+                  ),
+                  child: TransparencyGrid(size: size),
+                )
+              : null,
+        );
+      },
     );
   }
 }
