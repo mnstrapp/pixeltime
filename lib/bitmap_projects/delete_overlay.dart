@@ -18,6 +18,7 @@ class DeleteBitmapProjectOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           'Delete Project',

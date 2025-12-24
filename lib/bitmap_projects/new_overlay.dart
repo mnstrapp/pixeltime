@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/bitmap_project.dart';
+import '../ui/theme.dart';
 
 class NewBitmapProjectOverlay extends ConsumerStatefulWidget {
   final VoidCallback onCancel;
@@ -69,6 +70,7 @@ class _NewBitmapProjectOverlayState
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           'New Project',
@@ -77,6 +79,7 @@ class _NewBitmapProjectOverlayState
         Form(
           key: _formKey,
           child: Column(
+            spacing: BaseTheme.borderRadiusSmall,
             children: [
               TextFormField(
                 autofocus: true,

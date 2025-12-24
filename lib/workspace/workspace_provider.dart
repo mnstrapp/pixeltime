@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
@@ -150,16 +151,20 @@ class WorkspaceNotifier extends Notifier<bool> {
 
     final projects = ref.read(workspaceProjectsProvider);
     if (projects.isNotEmpty) {
-      final projectScreen = projects.firstWhere(
-        (projectScreen) => projectScreen.project.id == project.id,
-      );
-      final projectIndex = projects.indexOf(projectScreen);
-      if (projectIndex != -1) {
-        projects.removeAt(projectIndex);
-        final newIndex = (projects.isNotEmpty) ? 0 : -1;
-        ref.read(workspaceIndexProvider.notifier).index(newIndex);
-        ref.read(workspaceProjectsProvider.notifier).remove(projectIndex);
-        ref.read(workspaceTabsProvider.notifier).remove(projectIndex);
+      try {
+        final projectScreen = projects.firstWhere(
+          (projectScreen) => projectScreen.project.id == project.id,
+        );
+        final projectIndex = projects.indexOf(projectScreen);
+        if (projectIndex != -1) {
+          projects.removeAt(projectIndex);
+          final newIndex = (projects.isNotEmpty) ? 0 : -1;
+          ref.read(workspaceIndexProvider.notifier).index(newIndex);
+          ref.read(workspaceProjectsProvider.notifier).remove(projectIndex);
+          ref.read(workspaceTabsProvider.notifier).remove(projectIndex);
+        }
+      } catch (e) {
+        debugPrint('Error deleting project: $e');
       }
     }
 
