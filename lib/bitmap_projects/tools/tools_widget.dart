@@ -6,8 +6,7 @@ import '../tools/tools_provider.dart';
 import '../../models/bitmap_project.dart';
 import '../../ui/theme.dart';
 
-import 'options.dart';
-import 'select/options.dart';
+import 'move/options.dart';
 import 'pencil/options.dart';
 import 'eraser/options.dart';
 import 'fill/options.dart';
@@ -67,7 +66,7 @@ class _ToolList extends ConsumerWidget {
         tooltip: 'Select',
         icon: Symbols.highlight_mouse_cursor,
         onTap: () {},
-        type: BitmapProjectToolType.select,
+        type: BitmapProjectToolType.move,
       ),
       _ToolItem(
         tooltip: 'Draw',
@@ -134,10 +133,10 @@ class _ToolItem extends ConsumerStatefulWidget {
 class _ToolItemState extends ConsumerState<_ToolItem> {
   void _setSelectedOptions() {
     switch (widget.type) {
-      case BitmapProjectToolType.select:
+      case BitmapProjectToolType.move:
         ref
             .read(bitmapProjectToolOptionsProvider.notifier)
-            .set(BitmapProjectToolSelectOptions());
+            .set(BitmapProjectToolMoveOptions());
         break;
       case BitmapProjectToolType.pencil:
         ref

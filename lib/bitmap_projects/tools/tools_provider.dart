@@ -30,7 +30,7 @@ class BitmapProjectToolSelectedNotifier
     extends Notifier<BitmapProjectToolType> {
   @override
   BitmapProjectToolType build() {
-    return BitmapProjectToolType.select;
+    return BitmapProjectToolType.move;
   }
 
   void set(BitmapProjectToolType type) {

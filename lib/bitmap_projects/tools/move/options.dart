@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../options.dart';
 
-class BitmapProjectToolSelectOptions extends StatelessWidget {
-  const BitmapProjectToolSelectOptions({super.key});
+class BitmapProjectToolMoveOptions extends StatelessWidget {
+  const BitmapProjectToolMoveOptions({super.key});
 
   @override
   Widget build(BuildContext context) {

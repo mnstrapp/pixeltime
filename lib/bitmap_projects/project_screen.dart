@@ -197,7 +197,7 @@ class _LayerCanvas extends ConsumerWidget {
         break;
       case BitmapProjectToolType.fill:
         break;
-      case BitmapProjectToolType.select:
+      case BitmapProjectToolType.move:
         break;
     }
   }

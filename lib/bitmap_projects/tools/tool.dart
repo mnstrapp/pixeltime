@@ -1,5 +1,5 @@
 enum BitmapProjectToolType {
-  select,
+  move,
   pencil,
   eraser,
   fill,
@@ -8,8 +8,8 @@ enum BitmapProjectToolType {
 extension BitmapProjectToolTypeExtension on BitmapProjectToolType {
   String get name {
     switch (this) {
-      case BitmapProjectToolType.select:
-        return 'Select';
+      case BitmapProjectToolType.move:
+        return 'Move';
       case BitmapProjectToolType.pencil:
         return 'Pencil';
       case BitmapProjectToolType.eraser:

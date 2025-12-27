@@ -43,7 +43,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     ref.read(bitmapProjectToolOptionsProvider.notifier).set(null);
     ref
         .read(bitmapProjectToolSelectedProvider.notifier)
-        .set(BitmapProjectToolType.select);
+        .set(BitmapProjectToolType.move);
 
     return (true, null);
   }
@@ -74,7 +74,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     ref.read(bitmapProjectToolOptionsProvider.notifier).set(null);
     ref
         .read(bitmapProjectToolSelectedProvider.notifier)
-        .set(BitmapProjectToolType.select);
+        .set(BitmapProjectToolType.move);
 
     return (true, null);
   }

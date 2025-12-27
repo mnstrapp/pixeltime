@@ -256,9 +256,6 @@ class BitmapProjectLayer {
       final layers = result
           .map((layer) => BitmapProjectLayer.fromMap(layer))
           .toList();
-      for (var layer in layers) {
-        debugPrint('loading layer: ${layer.name}, pixels: ${layer.pixels}');
-      }
       return (layers, null);
     } catch (e) {
       return (
