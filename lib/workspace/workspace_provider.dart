@@ -26,7 +26,7 @@ class WorkspaceNotifier extends Notifier<bool> {
 
     final (projectScreen, projectError) = ref
         .read(workspaceProjectsProvider.notifier)
-        .add(projectScreen: BitmapProjectScreen(project: project));
+        .add(projectScreen: BitmapProjectScreen(projectId: project.id!));
     if (projectError != null) {
       return (false, projectError);
     }
@@ -87,7 +87,11 @@ class WorkspaceNotifier extends Notifier<bool> {
       return (false, 'No project opened');
     }
 
-    final project = projectScreen.project;
+    final project = ref
+        .read(bitmapProjectsProvider)
+        .firstWhere(
+          (project) => project.id == projectScreen.projectId,
+        );
     final (_, saveError) = await project.save();
     if (saveError != null) {
       if (saveError.contains('UNIQUE')) {
@@ -107,7 +111,11 @@ class WorkspaceNotifier extends Notifier<bool> {
 
   Future<(bool, String?)> saveAll() async {
     for (final projectScreen in ref.read(workspaceProjectsProvider)) {
-      final project = projectScreen.project;
+      final project = ref
+          .read(bitmapProjectsProvider)
+          .firstWhere(
+            (project) => project.id == projectScreen.projectId,
+          );
       final (_, saveError) = await project.save();
       if (saveError != null) {
         if (saveError.contains('UNIQUE')) {
@@ -153,7 +161,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     if (projects.isNotEmpty) {
       try {
         final projectScreen = projects.firstWhere(
-          (projectScreen) => projectScreen.project.id == project.id,
+          (projectScreen) => projectScreen.projectId == project.id,
         );
         final projectIndex = projects.indexOf(projectScreen);
         if (projectIndex != -1) {
@@ -186,7 +194,13 @@ class WorkspaceNotifier extends Notifier<bool> {
     if (index < 0) {
       return (null, 'No project opened');
     }
-    final project = ref.read(workspaceProjectsProvider)[index].project;
+    final project = ref
+        .read(bitmapProjectsProvider)
+        .firstWhere(
+          (project) =>
+              project.id ==
+              ref.read(workspaceProjectsProvider)[index].projectId,
+        );
     return (project, null);
   }
 }

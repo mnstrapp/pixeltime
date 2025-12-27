@@ -230,7 +230,14 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   if (projectScreen != null) {
                     final (_, error) = await ref
                         .read(bitmapProjectLayersProvider.notifier)
-                        .loadAll(project: projectScreen.project);
+                        .loadAll(
+                          project: ref
+                              .read(bitmapProjectsProvider)
+                              .firstWhere(
+                                (project) =>
+                                    project.id == projectScreen.projectId,
+                              ),
+                        );
                     if (error != null) {
                       messenger.showSnackBar(SnackBar(content: Text(error)));
                     }
@@ -305,7 +312,13 @@ class WorkspaceState extends ConsumerState<Workspace> {
     if (projectScreen != null) {
       final (_, error) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(project: projectScreen.project);
+          .loadAll(
+            project: ref
+                .read(bitmapProjectsProvider)
+                .firstWhere(
+                  (project) => project.id == projectScreen.projectId,
+                ),
+          );
       if (error != null) {
         messenger.showSnackBar(SnackBar(content: Text(error)));
       }

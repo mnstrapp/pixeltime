@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
 import '../../workspace/workspace_provider.dart';
+import '../bitmap_projects_provider.dart';
 import '../history_provider.dart';
 import 'layer_history_event.dart';
 
@@ -37,7 +38,17 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     if (currentProjectError != null) {
       return (false, currentProjectError);
     }
-    return loadAll(project: project!);
+    final (loadSuccess, loadError) = await loadAll(project: project!);
+    if (loadError != null) {
+      return (false, loadError);
+    }
+    final (projects, projectsError) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .loadAll();
+    if (projectsError != null) {
+      return (false, projectsError);
+    }
+    return (true, null);
   }
 
   Future<(bool, String?)> create({

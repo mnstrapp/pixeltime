@@ -8,6 +8,7 @@ import '../models/bitmap_project.dart';
 import '../models/bitmap_project_layer.dart';
 import '../ui/grid_provider.dart';
 import '../ui/theme.dart';
+import 'bitmap_projects_provider.dart';
 import 'layers/layers_provider.dart';
 import 'layers/layers_widget.dart';
 import 'tools/color_provider.dart';
@@ -17,8 +18,8 @@ import 'tools/tools_widget.dart';
 import '../ui/transparency_grid.dart';
 
 class BitmapProjectScreen extends ConsumerStatefulWidget {
-  final BitmapProject project;
-  const BitmapProjectScreen({super.key, required this.project});
+  final String projectId;
+  const BitmapProjectScreen({super.key, required this.projectId});
 
   @override
   ConsumerState<BitmapProjectScreen> createState() =>
@@ -66,12 +67,27 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
       return const SizedBox.shrink();
     }
 
+    final projects = ref.watch(bitmapProjectsProvider);
+    if (projects.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    BitmapProject? project;
+    if (projects.any((project) => project.id == widget.projectId)) {
+      project = projects.firstWhere(
+        (project) => project.id == widget.projectId,
+      );
+    }
+    if (project == null) {
+      return const SizedBox.shrink();
+    }
+
     return Stack(
       children: [
         TransparencyGrid(size: _size),
         Stack(
           children: [
-            for (final layer in widget.project.layers.reversed)
+            for (final layer in project.layers.reversed)
               Positioned(
                 left: layer.x.toDouble(),
                 top: layer.y.toDouble(),
@@ -84,7 +100,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
           top: 0,
           bottom: 0,
           child: Center(
-            child: BitmapProjectToolsWidget(project: widget.project),
+            child: BitmapProjectToolsWidget(project: project),
           ),
         ),
         Positioned(
@@ -92,7 +108,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
           top: 0,
           bottom: 0,
           child: Center(
-            child: BitmapProjectLayersWidget(project: widget.project),
+            child: BitmapProjectLayersWidget(project: project),
           ),
         ),
       ],
@@ -210,10 +226,16 @@ class _LayerCanvas extends ConsumerWidget {
     if (layers.isEmpty) {
       return const SizedBox.shrink();
     }
-    final layer = layers.firstWhere((layer) => layer.id == id);
-    if (layer.visible == false) {
+
+    BitmapProjectLayer? layer;
+    if (layers.any((layer) => layer.id == id)) {
+      layer = layers.firstWhere((layer) => layer.id == id);
+    }
+
+    if (layer == null || layer.visible == false) {
       return const SizedBox.shrink();
     }
+
     return FutureBuilder(
       future: _buildImage(ref),
       builder: (context, snapshot) {
