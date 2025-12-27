@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
-import 'options.dart';
+import 'tool.dart';
 
 final bitmapProjectToolOptionsProvider =
     NotifierProvider<BitmapProjectToolOptionsNotifier, Widget?>(() {
@@ -20,21 +20,20 @@ class BitmapProjectToolOptionsNotifier extends Notifier<Widget?> {
 }
 
 final bitmapProjectToolSelectedProvider =
-    NotifierProvider<
-      BitmapProjectToolSelectedNotifier,
-      BitmapProjectToolOptions
-    >(() {
-      return BitmapProjectToolSelectedNotifier();
-    });
+    NotifierProvider<BitmapProjectToolSelectedNotifier, BitmapProjectToolType>(
+      () {
+        return BitmapProjectToolSelectedNotifier();
+      },
+    );
 
 class BitmapProjectToolSelectedNotifier
-    extends Notifier<BitmapProjectToolOptions> {
+    extends Notifier<BitmapProjectToolType> {
   @override
-  BitmapProjectToolOptions build() {
-    return BitmapProjectToolOptions.select;
+  BitmapProjectToolType build() {
+    return BitmapProjectToolType.select;
   }
 
-  void set(BitmapProjectToolOptions options) {
-    state = options;
+  void set(BitmapProjectToolType type) {
+    state = type;
   }
 }

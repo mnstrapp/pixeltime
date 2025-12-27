@@ -11,6 +11,7 @@ import 'select/options.dart';
 import 'pencil/options.dart';
 import 'eraser/options.dart';
 import 'fill/options.dart';
+import 'tool.dart';
 
 class BitmapProjectToolsWidget extends ConsumerWidget {
   final BitmapProject project;
@@ -66,25 +67,25 @@ class _ToolList extends ConsumerWidget {
         tooltip: 'Select',
         icon: Symbols.highlight_mouse_cursor,
         onTap: () {},
-        options: BitmapProjectToolOptions.select,
+        type: BitmapProjectToolType.select,
       ),
       _ToolItem(
         tooltip: 'Draw',
         icon: Symbols.draw,
         onTap: () {},
-        options: BitmapProjectToolOptions.pencil,
+        type: BitmapProjectToolType.pencil,
       ),
       _ToolItem(
         tooltip: 'Erase',
         icon: Symbols.ink_eraser,
         onTap: () {},
-        options: BitmapProjectToolOptions.eraser,
+        type: BitmapProjectToolType.eraser,
       ),
       _ToolItem(
         tooltip: 'Fill',
         icon: Symbols.format_color_fill,
         onTap: () {},
-        options: BitmapProjectToolOptions.fill,
+        type: BitmapProjectToolType.fill,
       ),
     ];
 
@@ -108,13 +109,13 @@ class _ToolItem extends ConsumerStatefulWidget {
   final String tooltip;
   final IconData icon;
   final VoidCallback onTap;
-  final BitmapProjectToolOptions options;
+  final BitmapProjectToolType type;
 
   const _ToolItem({
     required this.tooltip,
     required this.icon,
     required this.onTap,
-    required this.options,
+    required this.type,
   });
 
   _ToolItem copyWith({
@@ -123,7 +124,7 @@ class _ToolItem extends ConsumerStatefulWidget {
     tooltip: tooltip,
     icon: icon,
     onTap: onTap ?? this.onTap,
-    options: options,
+    type: type,
   );
 
   @override
@@ -132,23 +133,23 @@ class _ToolItem extends ConsumerStatefulWidget {
 
 class _ToolItemState extends ConsumerState<_ToolItem> {
   void _setSelectedOptions() {
-    switch (widget.options) {
-      case BitmapProjectToolOptions.select:
+    switch (widget.type) {
+      case BitmapProjectToolType.select:
         ref
             .read(bitmapProjectToolOptionsProvider.notifier)
             .set(BitmapProjectToolSelectOptions());
         break;
-      case BitmapProjectToolOptions.pencil:
+      case BitmapProjectToolType.pencil:
         ref
             .read(bitmapProjectToolOptionsProvider.notifier)
             .set(BitmapProjectToolPencilOptions());
         break;
-      case BitmapProjectToolOptions.eraser:
+      case BitmapProjectToolType.eraser:
         ref
             .read(bitmapProjectToolOptionsProvider.notifier)
             .set(BitmapProjectToolEraserOptions());
         break;
-      case BitmapProjectToolOptions.fill:
+      case BitmapProjectToolType.fill:
         ref
             .read(bitmapProjectToolOptionsProvider.notifier)
             .set(BitmapProjectToolFillOptions());
@@ -157,7 +158,7 @@ class _ToolItemState extends ConsumerState<_ToolItem> {
   }
 
   void _setSelected() {
-    ref.read(bitmapProjectToolSelectedProvider.notifier).set(widget.options);
+    ref.read(bitmapProjectToolSelectedProvider.notifier).set(widget.type);
     _setSelectedOptions();
   }
 
@@ -166,7 +167,7 @@ class _ToolItemState extends ConsumerState<_ToolItem> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       final selected =
-          ref.watch(bitmapProjectToolSelectedProvider) == widget.options;
+          ref.watch(bitmapProjectToolSelectedProvider) == widget.type;
       if (selected) {
         _setSelectedOptions();
       }
@@ -177,7 +178,7 @@ class _ToolItemState extends ConsumerState<_ToolItem> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selected =
-        ref.watch(bitmapProjectToolSelectedProvider) == widget.options;
+        ref.watch(bitmapProjectToolSelectedProvider) == widget.type;
 
     return Tooltip(
       message: widget.tooltip,

@@ -55,6 +55,10 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
 
+  void updateLayer(BitmapProjectLayer layer) {
+    state = state.map((l) => l.id == layer.id ? layer : l).toList();
+  }
+
   Future<(bool, String?)> update({
     required BitmapProjectLayer layer,
     required BitmapProjectLayer originalLayer,

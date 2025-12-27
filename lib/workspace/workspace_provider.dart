@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/project_screen.dart';
-import '../bitmap_projects/tools/options.dart';
 import '../bitmap_projects/tools/tools_provider.dart';
+import '../bitmap_projects/tools/tool.dart';
 import '../models/bitmap_project.dart';
 import 'index_provider.dart';
 import 'projects_provider.dart';
@@ -43,7 +43,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     ref.read(bitmapProjectToolOptionsProvider.notifier).set(null);
     ref
         .read(bitmapProjectToolSelectedProvider.notifier)
-        .set(BitmapProjectToolOptions.select);
+        .set(BitmapProjectToolType.select);
 
     return (true, null);
   }
@@ -74,7 +74,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     ref.read(bitmapProjectToolOptionsProvider.notifier).set(null);
     ref
         .read(bitmapProjectToolSelectedProvider.notifier)
-        .set(BitmapProjectToolOptions.select);
+        .set(BitmapProjectToolType.select);
 
     return (true, null);
   }

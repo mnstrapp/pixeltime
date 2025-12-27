@@ -8,6 +8,7 @@ import '../models/bitmap_project.dart';
 import '../models/bitmap_project_layer.dart';
 import '../ui/grid_provider.dart';
 import '../ui/theme.dart';
+import 'layers/layers_provider.dart';
 import 'layers/layers_widget.dart';
 import 'tools/color_provider.dart';
 import 'tools/tools_widget.dart';
@@ -34,7 +35,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
   }
 
   Widget _buildLayer(BitmapProjectLayer layer) {
-    return _LayerCanvas(layer: layer);
+    return _LayerCanvas(id: layer.id!);
   }
 
   @override
@@ -97,30 +98,16 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
   }
 }
 
-class _LayerCanvas extends ConsumerStatefulWidget {
-  final BitmapProjectLayer layer;
-  const _LayerCanvas({required this.layer});
-
-  @override
-  ConsumerState<_LayerCanvas> createState() => _LayerCanvasState();
-}
-
-class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
-  BitmapProjectLayer? _layer;
-
-  @override
-  void initState() {
-    super.initState();
-    _layer = widget.layer.copyWith(
-      x: widget.layer.x,
-      y: widget.layer.y,
-      width: widget.layer.width,
-      height: widget.layer.height,
-      pixels: widget.layer.pixels,
-    );
-  }
+class _LayerCanvas extends ConsumerWidget {
+  final String id;
+  const _LayerCanvas({required this.id});
 
   Future<ui.Image> _buildImage(WidgetRef ref) async {
+    final layer = ref
+        .watch(bitmapProjectLayersProvider)
+        .firstWhere((layer) => layer.id == id);
+    debugPrint('building image for layer: ${layer.name}');
+    debugPrint('building layer pixels: ${layer.pixels}');
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
@@ -131,7 +118,7 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
 
     int maxX = 0;
     int maxY = 0;
-    for (var pixel in _layer!.pixels) {
+    for (var pixel in layer.pixels) {
       if (pixel.x > maxX) {
         maxX = pixel.x;
       }
@@ -140,7 +127,7 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       }
     }
 
-    for (var pixel in _layer!.pixels) {
+    for (var pixel in layer.pixels) {
       canvas.drawRect(
         Rect.fromLTWH(
           (pixel.x.toDouble() ~/ gridSize) * gridSize,
@@ -154,14 +141,20 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
 
     final picture = recorder.endRecording();
     final image = await picture.toImage(
-      (_layer!.width.toDouble() * scale).ceil(),
-      (_layer!.height.toDouble() * scale).ceil(),
+      (layer.width.toDouble() * scale).ceil(),
+      (layer.height.toDouble() * scale).ceil(),
     );
     picture.dispose();
     return image;
   }
 
-  Future<void> _paint(DragDownDetails details) async {
+  Future<void> _paint(WidgetRef ref, DragDownDetails details) async {
+    final layers = ref.watch(bitmapProjectLayersProvider);
+    if (layers.isEmpty) {
+      return;
+    }
+    final layer = layers.firstWhere((layer) => layer.id == id);
+
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
@@ -171,32 +164,31 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     int xDiff = 0;
     int yDiff = 0;
 
-    if (dx < _layer!.x) {
-      xDiff = _layer!.x - dx;
-    } else if (dx >= _layer!.x + _layer!.width) {
-      xDiff = dx - (_layer!.x + _layer!.width);
+    if (dx < layer.x) {
+      xDiff = layer.x - dx;
+    } else if (dx >= layer.x + layer.width) {
+      xDiff = dx - (layer.x + layer.width);
     }
 
-    if (dy < _layer!.y) {
-      yDiff = _layer!.y - dy;
-    } else if (dy >= _layer!.y + _layer!.height) {
-      yDiff = dy - (_layer!.y + _layer!.height);
+    if (dy < layer.y) {
+      yDiff = layer.y - dy;
+    } else if (dy >= layer.y + layer.height) {
+      yDiff = dy - (layer.y + layer.height);
     }
 
     final color = ref.read(bitmapProjectToolColorProvider);
-    setState(() {
-      _layer!.height = (_layer!.height + yDiff).toInt() + gridSize.toInt();
-      _layer!.width = (_layer!.width + xDiff).toInt() + gridSize.toInt();
-      _layer!.pixels.add(BitmapProjectPixel(color: color, x: dx, y: dy));
-    });
-    final (_, saveError) = await _layer!.save();
+    layer.height = (layer.height + yDiff).toInt() + gridSize.toInt();
+    layer.width = (layer.width + xDiff).toInt() + gridSize.toInt();
+    layer.pixels.add(BitmapProjectPixel(color: color, x: dx, y: dy));
+    final (_, saveError) = await layer.save();
     if (saveError != null) {
       debugPrint('saveError: $saveError');
     }
+    ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.sizeOf(context);
     return FutureBuilder(
       future: _buildImage(ref),
@@ -215,7 +207,7 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
           children: [
             if (child != null) child,
             GestureDetector(
-              onPanDown: (details) => _paint(details),
+              onPanDown: (details) => _paint(ref, details),
               child: Container(
                 width: size.width,
                 height: size.height,
