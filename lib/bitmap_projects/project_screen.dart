@@ -11,6 +11,8 @@ import '../ui/theme.dart';
 import 'layers/layers_provider.dart';
 import 'layers/layers_widget.dart';
 import 'tools/color_provider.dart';
+import 'tools/tool.dart';
+import 'tools/tools_provider.dart';
 import 'tools/tools_widget.dart';
 import '../ui/transparency_grid.dart';
 
@@ -106,8 +108,6 @@ class _LayerCanvas extends ConsumerWidget {
     final layer = ref
         .watch(bitmapProjectLayersProvider)
         .firstWhere((layer) => layer.id == id);
-    debugPrint('building image for layer: ${layer.name}');
-    debugPrint('building layer pixels: ${layer.pixels}');
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
@@ -187,6 +187,21 @@ class _LayerCanvas extends ConsumerWidget {
     ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
   }
 
+  void _useSelectedTool(WidgetRef ref, DragDownDetails details) {
+    final selectedTool = ref.watch(bitmapProjectToolSelectedProvider);
+    switch (selectedTool) {
+      case BitmapProjectToolType.pencil:
+        _paint(ref, details);
+        break;
+      case BitmapProjectToolType.eraser:
+        break;
+      case BitmapProjectToolType.fill:
+        break;
+      case BitmapProjectToolType.select:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.sizeOf(context);
@@ -207,7 +222,7 @@ class _LayerCanvas extends ConsumerWidget {
           children: [
             if (child != null) child,
             GestureDetector(
-              onPanDown: (details) => _paint(ref, details),
+              onPanDown: (details) => _useSelectedTool(ref, details),
               child: Container(
                 width: size.width,
                 height: size.height,
