@@ -71,7 +71,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
         TransparencyGrid(size: _size),
         Stack(
           children: [
-            for (final layer in widget.project.layers)
+            for (final layer in widget.project.layers.reversed)
               Positioned(
                 left: layer.x.toDouble(),
                 top: layer.y.toDouble(),
@@ -149,11 +149,12 @@ class _LayerCanvas extends ConsumerWidget {
   }
 
   Future<void> _paint(WidgetRef ref, DragDownDetails details) async {
-    final layers = ref.watch(bitmapProjectLayersProvider);
-    if (layers.isEmpty) {
+    final layer = ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .topVisibleLayer();
+    if (layer == null) {
       return;
     }
-    final layer = layers.firstWhere((layer) => layer.id == id);
 
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
@@ -205,6 +206,14 @@ class _LayerCanvas extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.sizeOf(context);
+    final layers = ref.watch(bitmapProjectLayersProvider);
+    if (layers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final layer = layers.firstWhere((layer) => layer.id == id);
+    if (layer.visible == false) {
+      return const SizedBox.shrink();
+    }
     return FutureBuilder(
       future: _buildImage(ref),
       builder: (context, snapshot) {
