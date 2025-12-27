@@ -20,6 +20,10 @@ class LayerAddHistoryEvent implements HistoryEvent {
     if (saveError != null) {
       return (false, saveError);
     }
+    final (_, reorderError) = await layer.reorder(0);
+    if (reorderError != null) {
+      return (false, reorderError);
+    }
     return await onExecute();
   }
 

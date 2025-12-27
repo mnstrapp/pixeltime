@@ -4,7 +4,6 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
-import '../history_provider.dart';
 import 'layers_provider.dart';
 
 class BitmapProjectLayersNewOverlay extends ConsumerStatefulWidget {
@@ -40,7 +39,7 @@ class _BitmapProjectLayersNewOverlayState
     final layer = BitmapProjectLayer(
       name: _nameController.text,
       projectId: widget.project.id!,
-      position: layers.length + 1,
+      position: layers.isNotEmpty ? layers.last.position + 1 : 0,
     );
 
     try {
@@ -79,6 +78,7 @@ class _BitmapProjectLayersNewOverlayState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text('New Layer', style: theme.textTheme.titleLarge),
         Form(

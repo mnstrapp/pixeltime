@@ -5,6 +5,44 @@ import 'package:uuid/uuid.dart';
 
 import '../database/database.dart';
 
+class BitmapProjectPixel {
+  Color color;
+  int x;
+  int y;
+
+  BitmapProjectPixel({
+    required this.color,
+    required this.x,
+    required this.y,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'color': color.toARGB32(),
+      'x': x,
+      'y': y,
+    };
+  }
+
+  factory BitmapProjectPixel.fromMap(Map<String, dynamic> map) {
+    return BitmapProjectPixel(
+      color: Color(map['color']),
+      x: map['x'],
+      y: map['y'],
+    );
+  }
+
+  BitmapProjectPixel copyWith({
+    Color? color,
+  }) {
+    return BitmapProjectPixel(
+      color: color ?? this.color,
+      x: x,
+      y: y,
+    );
+  }
+}
+
 class BitmapProjectLayer {
   String? id;
   String name;
@@ -15,7 +53,7 @@ class BitmapProjectLayer {
   int height;
   int x;
   int y;
-  List<List<Color>> data = [];
+  List<BitmapProjectPixel> pixels = [];
 
   BitmapProjectLayer({
     this.id,
@@ -27,17 +65,8 @@ class BitmapProjectLayer {
     this.height = 100,
     this.x = 0,
     this.y = 0,
-    List<List<Color>>? canvas,
-  }) {
-    if (canvas == null || canvas.isEmpty) {
-      data = List.generate(
-        height,
-        (index) => List.generate(width, (index) => Colors.transparent),
-      );
-    } else {
-      data = canvas;
-    }
-  }
+    List<BitmapProjectPixel>? pixels,
+  });
 
   @override
   String toString() {
@@ -57,15 +86,22 @@ class BitmapProjectLayer {
       'y': y,
       'data': json
           .encode(
-            data
-                .map((row) => row.map((pixel) => pixel.toARGB32()).toList())
-                .toList(),
+            pixels.map((pixel) => pixel.toMap()).toList(),
           )
           .toString(),
     };
   }
 
   factory BitmapProjectLayer.fromMap(Map<String, dynamic> map) {
+    final pixelsData = <Map<String, dynamic>>[];
+    if (map['data'] != null) {
+      for (var pixel in json.decode(map['data'])) {
+        pixelsData.add(pixel);
+      }
+    }
+    final pixels = pixelsData
+        .map((pixel) => BitmapProjectPixel.fromMap(pixel))
+        .toList();
     var layer = BitmapProjectLayer(
       id: map['id'],
       name: map['name'],
@@ -76,15 +112,8 @@ class BitmapProjectLayer {
       height: map['height'],
       x: map['x'],
       y: map['y'],
+      pixels: pixels,
     );
-    final dataMap = json.decode(map['data']);
-    for (final row in dataMap) {
-      final rowData = <Color>[];
-      for (final pixel in row) {
-        rowData.add(Color(pixel));
-      }
-      layer.data.add(rowData);
-    }
     return layer;
   }
 
@@ -96,7 +125,7 @@ class BitmapProjectLayer {
     int? height,
     int? x,
     int? y,
-    List<List<Color>>? canvas,
+    List<BitmapProjectPixel>? pixels,
   }) {
     return BitmapProjectLayer(
       id: id,
@@ -108,7 +137,7 @@ class BitmapProjectLayer {
       height: height ?? this.height,
       x: x ?? this.x,
       y: y ?? this.y,
-      canvas: canvas ?? data,
+      pixels: pixels ?? this.pixels,
     );
   }
 
@@ -162,7 +191,9 @@ class BitmapProjectLayer {
       if (findError != null) {
         return (false, findError);
       }
-      final currentIndex = layers.indexWhere((layer) => layer.id == id);
+      final currentIndex = layers.indexWhere(
+        (layer) => layer.id == id,
+      );
       if (currentIndex == -1) {
         return (false, 'Layer not found in project');
       }

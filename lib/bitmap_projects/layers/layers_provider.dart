@@ -118,4 +118,15 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     );
     return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
   }
+
+  BitmapProjectLayer? topVisibleLayer() {
+    BitmapProjectLayer? layer;
+    for (var i = 0; i < state.length; i++) {
+      if (state[i].visible) {
+        layer = state[i];
+        break;
+      }
+    }
+    return layer;
+  }
 }
