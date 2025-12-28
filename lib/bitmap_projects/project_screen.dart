@@ -64,11 +64,13 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
   @override
   Widget build(BuildContext context) {
     if (_size == Size.zero) {
+      debugPrint('size is zero');
       return const SizedBox.shrink();
     }
 
     final projects = ref.watch(bitmapProjectsProvider);
     if (projects.isEmpty) {
+      debugPrint('projects is empty');
       return const SizedBox.shrink();
     }
 
@@ -79,6 +81,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
       );
     }
     if (project == null) {
+      debugPrint('project is null');
       return const SizedBox.shrink();
     }
 
@@ -194,14 +197,14 @@ class _LayerCanvas extends ConsumerWidget {
     }
 
     final color = ref.read(bitmapProjectToolColorProvider);
-    layer.height = (layer.height + yDiff).toInt() + gridSize.toInt();
-    layer.width = (layer.width + xDiff).toInt() + gridSize.toInt();
-    layer.pixels.add(BitmapProjectPixel(color: color, x: dx, y: dy));
-    final (_, saveError) = await layer.save();
-    if (saveError != null) {
-      debugPrint('saveError: $saveError');
+    final height = (layer.height + yDiff).toInt() + gridSize.toInt();
+    final width = (layer.width + xDiff).toInt() + gridSize.toInt();
+    final (_, addError) = await ref
+        .read(bitmapProjectLayerPixelsProvider.notifier)
+        .add(BitmapProjectPixel(color: color, x: dx, y: dy), height, width);
+    if (addError != null) {
+      debugPrint('addError: $addError');
     }
-    ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
   }
 
   void _useSelectedTool(WidgetRef ref, DragDownDetails details) {

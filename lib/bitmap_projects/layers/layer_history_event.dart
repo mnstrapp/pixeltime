@@ -202,3 +202,64 @@ class LayerReorderHistoryEvent implements HistoryEvent {
     return await onUndo();
   }
 }
+
+class LayerAddPixelHistoryEvent implements HistoryEvent {
+  @override
+  final Future<(bool, String?)> Function() onExecute;
+  @override
+  final Future<(bool, String?)> Function() onUndo;
+  final BitmapProjectLayer layer;
+  final BitmapProjectPixel pixel;
+  final int height;
+  final int width;
+  late int originalHeight;
+  late int originalWidth;
+
+  LayerAddPixelHistoryEvent({
+    required this.layer,
+    required this.pixel,
+    required this.height,
+    required this.width,
+    required this.onExecute,
+    required this.onUndo,
+  });
+
+  @override
+  Future<(bool, String?)> execute() async {
+    originalHeight = layer.height;
+    originalWidth = layer.width;
+    layer.height = height;
+    layer.width = width;
+    layer.pixels.add(pixel);
+    final (_, saveError) = await layer.save();
+    if (saveError != null) {
+      return (false, saveError);
+    }
+    return await onExecute();
+  }
+
+  @override
+  Future<(bool, String?)> undo() async {
+    layer.height = originalHeight;
+    layer.width = originalWidth;
+    layer.pixels.remove(pixel);
+    final (_, saveError) = await layer.save();
+    if (saveError != null) {
+      return (false, saveError);
+    }
+    return await onUndo();
+  }
+
+  @override
+  String toString() {
+    return {
+      'type': 'LayerAddPixelHistoryEvent',
+      'layer': layer.toMap(),
+      'pixel': pixel.toMap(),
+      'height': height,
+      'width': width,
+      'originalHeight': originalHeight,
+      'originalWidth': originalWidth,
+    }.toString();
+  }
+}

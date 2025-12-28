@@ -169,11 +169,14 @@ class WorkspaceState extends ConsumerState<Workspace> {
 
   Future<void> _onOpenProject(BitmapProject project) async {
     final messenger = ScaffoldMessenger.of(context);
-    final (_, addProjectError) = ref
+    final (_, addProjectError) = await ref
         .read(workspaceProvider.notifier)
         .add(project);
     if (addProjectError != null) {
-      messenger.showSnackBar(SnackBar(content: Text(addProjectError)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(addProjectError)),
+      );
+      return;
     }
     _buildProjectMenuBar();
     final (_, error) = await ref
@@ -325,17 +328,24 @@ class WorkspaceState extends ConsumerState<Workspace> {
     }
   }
 
-  void _onSubmitNewProject(BitmapProject project) {
+  Future<void> _onSubmitNewProject(BitmapProject project) async {
     final messenger = ScaffoldMessenger.of(context);
-    final (_, addProjectError) = ref
+    final (_, addProjectError) = await ref
         .read(workspaceProvider.notifier)
         .add(project);
     if (addProjectError != null) {
       messenger.showSnackBar(
         SnackBar(content: Text(addProjectError)),
       );
+      return;
     }
     _buildProjectMenuBar();
+    final (_, error) = await ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .loadAll(project: project);
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
+    }
     hideOverlay();
   }
 

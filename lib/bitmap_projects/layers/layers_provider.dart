@@ -145,3 +145,57 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     return layer;
   }
 }
+
+final bitmapProjectLayerPixelsProvider =
+    NotifierProvider<
+      BitmapProjectLayerPixelsNotifier,
+      List<BitmapProjectPixel>
+    >(() {
+      return BitmapProjectLayerPixelsNotifier();
+    });
+
+class BitmapProjectLayerPixelsNotifier
+    extends Notifier<List<BitmapProjectPixel>> {
+  @override
+  List<BitmapProjectPixel> build() {
+    final layer = ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .topVisibleLayer();
+    if (layer == null) {
+      return [];
+    }
+    return layer.pixels;
+  }
+
+  void set(BitmapProjectLayer layer) {
+    state = layer.pixels;
+  }
+
+  Future<(bool, String?)> add(
+    BitmapProjectPixel pixel,
+    int height,
+    int width,
+  ) async {
+    final layer = ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .topVisibleLayer();
+    if (layer == null) {
+      return (false, 'Layer not found');
+    }
+    final event = LayerAddPixelHistoryEvent(
+      layer: layer,
+      pixel: pixel,
+      height: height,
+      width: width,
+      onExecute: () async {
+        ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
+        return (true, null);
+      },
+      onUndo: () async {
+        ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
+        return (true, null);
+      },
+    );
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+  }
+}

@@ -20,7 +20,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     return true;
   }
 
-  (bool, String?) add(BitmapProject project) {
+  Future<(bool, String?)> add(BitmapProject project) async {
     int workspaceIndex = ref.read(workspaceIndexProvider);
     ref.read(workspaceIndexProvider.notifier).index(workspaceIndex + 1);
 
@@ -29,6 +29,13 @@ class WorkspaceNotifier extends Notifier<bool> {
         .add(projectScreen: BitmapProjectScreen(projectId: project.id!));
     if (projectError != null) {
       return (false, projectError);
+    }
+
+    final (projects, projectsError) = await ref
+        .read(bitmapProjectsProvider.notifier)
+        .loadAll();
+    if (projectsError != null) {
+      return (false, projectsError);
     }
 
     final (tab, tabError) = ref
