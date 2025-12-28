@@ -247,13 +247,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   }
                 },
               ),
-              UIMenuBarItem(
-                label: 'Save',
-                icon: Icons.save,
-                onPressed: () {
-                  ref.read(workspaceProvider.notifier).save();
-                },
-              ),
             ],
           ),
         );
