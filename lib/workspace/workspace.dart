@@ -444,7 +444,8 @@ class WorkspaceState extends ConsumerState<Workspace> {
               ),
             ),
             Positioned(
-              bottom: 0,
+              top: 0,
+              right: 0,
               child: UITabBar(
                 selectedIndex: workspaceIndex >= 0 ? workspaceIndex : null,
                 onPressed: _onTabPressed,
