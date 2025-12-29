@@ -27,7 +27,6 @@ class History {
       debugPrint('$logHeader Error executing event: $error');
       return (false, error);
     }
-    debugPrint('$logHeader Adding event: $event');
     events.add(event);
     return (true, null);
   }
@@ -43,7 +42,6 @@ class History {
       debugPrint('$logHeader Error undoing event: $error');
       return (false, error);
     }
-    debugPrint('$logHeader Undoing event: $event');
     undoneEvents.add(event);
     return (true, null);
   }
@@ -59,7 +57,6 @@ class History {
       debugPrint('$logHeader Error executing event: $error');
       return (false, error);
     }
-    debugPrint('$logHeader Redoing event: $event');
     events.add(event);
     return (true, null);
   }

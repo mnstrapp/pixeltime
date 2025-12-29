@@ -116,14 +116,33 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
   }
 }
 
-class _LayerCanvas extends ConsumerWidget {
+class _LayerCanvas extends ConsumerStatefulWidget {
   final String id;
   const _LayerCanvas({required this.id});
 
-  Future<ui.Image> _buildImage(WidgetRef ref) async {
+  @override
+  ConsumerState<_LayerCanvas> createState() => _LayerCanvasState();
+}
+
+class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
+  ui.Image? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _buildImage().then((image) {
+        setState(() {
+          _image = image;
+        });
+      });
+    });
+  }
+
+  Future<ui.Image> _buildImage() async {
     final layer = ref
         .watch(bitmapProjectLayersProvider)
-        .firstWhere((layer) => layer.id == id);
+        .firstWhere((layer) => layer.id == widget.id);
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
@@ -164,7 +183,7 @@ class _LayerCanvas extends ConsumerWidget {
     return image;
   }
 
-  Future<void> _paint(WidgetRef ref, DragDownDetails details) async {
+  Future<void> _paint(Offset offset) async {
     final layer = ref
         .read(bitmapProjectLayersProvider.notifier)
         .topVisibleLayer();
@@ -175,8 +194,8 @@ class _LayerCanvas extends ConsumerWidget {
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
-    final dx = details.globalPosition.dx.toInt();
-    final dy = details.globalPosition.dy.toInt();
+    final dx = offset.dx.toInt();
+    final dy = offset.dy.toInt();
 
     int xDiff = 0;
     int yDiff = 0;
@@ -202,13 +221,18 @@ class _LayerCanvas extends ConsumerWidget {
     if (addError != null) {
       debugPrint('addError: $addError');
     }
+    _buildImage().then((image) {
+      setState(() {
+        _image = image;
+      });
+    });
   }
 
-  void _useSelectedTool(WidgetRef ref, DragDownDetails details) {
+  void _useSelectedTool(Offset offset) {
     final selectedTool = ref.watch(bitmapProjectToolSelectedProvider);
     switch (selectedTool) {
       case BitmapProjectToolType.pencil:
-        _paint(ref, details);
+        _paint(offset);
         break;
       case BitmapProjectToolType.eraser:
         break;
@@ -220,7 +244,7 @@ class _LayerCanvas extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final layers = ref.watch(bitmapProjectLayersProvider);
     if (layers.isEmpty) {
@@ -228,41 +252,34 @@ class _LayerCanvas extends ConsumerWidget {
     }
 
     BitmapProjectLayer? layer;
-    if (layers.any((layer) => layer.id == id)) {
-      layer = layers.firstWhere((layer) => layer.id == id);
+    if (layers.any((layer) => layer.id == widget.id)) {
+      layer = layers.firstWhere((layer) => layer.id == widget.id);
     }
 
     if (layer == null || layer.visible == false) {
       return const SizedBox.shrink();
     }
 
-    return FutureBuilder(
-      future: _buildImage(ref),
-      builder: (context, snapshot) {
-        Widget? child;
-        if (snapshot.connectionState == ConnectionState.done) {
-          child = CustomPaint(
+    return Stack(
+      children: [
+        if (_image != null)
+          CustomPaint(
             size: Size(
-              snapshot.data!.width.toDouble(),
-              snapshot.data!.height.toDouble(),
+              _image!.width.toDouble(),
+              _image!.height.toDouble(),
             ),
-            painter: _LayerPainter(image: snapshot.data!),
-          );
-        }
-        return Stack(
-          children: [
-            if (child != null) child,
-            GestureDetector(
-              onPanDown: (details) => _useSelectedTool(ref, details),
-              child: Container(
-                width: size.width,
-                height: size.height,
-                color: Colors.transparent,
-              ),
-            ),
-          ],
-        );
-      },
+            painter: _LayerPainter(image: _image!),
+          ),
+        GestureDetector(
+          onPanDown: (details) => _useSelectedTool(details.globalPosition),
+          onPanUpdate: (details) => _useSelectedTool(details.globalPosition),
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: Colors.transparent,
+          ),
+        ),
+      ],
     );
   }
 }
