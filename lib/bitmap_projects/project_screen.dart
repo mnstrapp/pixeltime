@@ -129,6 +129,7 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
   ui.Image? _image;
   ui.Image? _bufferImage;
   List<BitmapProjectPixel> _bufferPixels = [];
+  Offset? _currentPosition;
 
   @override
   void initState() {
@@ -287,19 +288,20 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
           .add(BitmapProjectPixel(color: color, x: dx, y: dy), height, width);
     }
 
-    setState(() {
-      _bufferPixels = [];
-      _bufferImage = null;
-    });
-
     _buildImage().then((image) {
       setState(() {
         _image = image;
+        _bufferPixels = [];
+        _bufferImage = null;
       });
     });
   }
 
   void _useSelectedTool(Offset offset) {
+    setState(() {
+      _currentPosition = offset;
+    });
+
     final selectedTool = ref.watch(bitmapProjectToolSelectedProvider);
     switch (selectedTool) {
       case BitmapProjectToolType.pencil:
@@ -351,7 +353,14 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
           ),
         GestureDetector(
           onPanDown: (details) => _useSelectedTool(details.globalPosition),
-          onPanUpdate: (details) => _useSelectedTool(details.globalPosition),
+          onPanUpdate: (details) {
+            if (_currentPosition != null &&
+                _currentPosition!.dx == details.globalPosition.dx &&
+                _currentPosition!.dy == details.globalPosition.dy) {
+              return;
+            }
+            _useSelectedTool(details.globalPosition);
+          },
           onPanEnd: (_) => _saveBufferPixels(_bufferPixels),
           child: Container(
             width: size.width,
