@@ -7,6 +7,8 @@ class BitmapProject {
   String? id;
   String name;
   String description;
+  int width;
+  int height;
   String? createdAt;
   String? updatedAt;
   List<BitmapProjectLayer> layers = [];
@@ -15,6 +17,8 @@ class BitmapProject {
     this.id,
     required this.name,
     required this.description,
+    this.width = 100,
+    this.height = 100,
     this.createdAt,
     this.updatedAt,
   });
@@ -23,6 +27,8 @@ class BitmapProject {
     String? id,
     String? name,
     String? description,
+    int? width,
+    int? height,
     String? createdAt,
     String? updatedAt,
   }) {
@@ -30,6 +36,8 @@ class BitmapProject {
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
+      width: width ?? this.width,
+      height: height ?? this.height,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -40,6 +48,8 @@ class BitmapProject {
       'id': id,
       'name': name,
       'description': description,
+      'width': width,
+      'height': height,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
@@ -50,6 +60,8 @@ class BitmapProject {
       id: map['id'],
       name: map['name'],
       description: map['description'],
+      width: map['width'],
+      height: map['height'],
       createdAt: map['created_at'],
       updatedAt: map['updated_at'],
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bitmap_projects/bitmap_projects_provider.dart';
 import '../bitmap_projects/layers/layers_provider.dart';
@@ -9,6 +10,7 @@ import '../bitmap_projects/history_provider.dart';
 import '../bitmap_projects/manage_projects_overlay.dart';
 import '../bitmap_projects/new_overlay.dart';
 import '../bitmap_projects/open_overlay.dart';
+import '../bitmap_projects/resize_overlay.dart';
 import '../models/bitmap_project.dart';
 import '../ui/overlay_content.dart';
 import '../ui/menu_bar.dart';
@@ -291,6 +293,23 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   if (error != null) {
                     messenger.showSnackBar(SnackBar(content: Text(error)));
                   }
+                },
+              ),
+            ],
+          ),
+        );
+
+    ref
+        .read(workspaceMenuBarProvider.notifier)
+        .addSuffix(
+          item: UIMenuBarItem(
+            label: 'Canvas',
+            children: [
+              UIMenuBarItem(
+                label: 'Resize',
+                icon: Symbols.resize,
+                onPressed: () {
+                  showOverlay(ResizeBitmapProjectOverlay());
                 },
               ),
             ],

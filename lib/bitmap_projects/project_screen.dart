@@ -64,13 +64,11 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
   @override
   Widget build(BuildContext context) {
     if (_size == Size.zero) {
-      debugPrint('size is zero');
       return const SizedBox.shrink();
     }
 
     final projects = ref.watch(bitmapProjectsProvider);
     if (projects.isEmpty) {
-      debugPrint('projects is empty');
       return const SizedBox.shrink();
     }
 
@@ -81,7 +79,6 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
       );
     }
     if (project == null) {
-      debugPrint('project is null');
       return const SizedBox.shrink();
     }
 
@@ -90,7 +87,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
         TransparencyGrid(size: _size),
         Stack(
           children: [
-            for (final layer in project.layers.reversed)
+            for (final layer in project!.layers.reversed)
               Positioned(
                 left: layer.x.toDouble(),
                 top: layer.y.toDouble(),
