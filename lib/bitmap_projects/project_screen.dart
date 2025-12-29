@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -239,16 +240,14 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     _buildBufferImage();
   }
 
-  Future<void> _saveBufferPixels() async {
+  void _saveBufferPixels(List<BitmapProjectPixel> pixels) {
     if (!mounted) {
       return;
     }
 
-    if (_bufferPixels.isEmpty) {
+    if (pixels.isEmpty) {
       return;
     }
-
-    final pixels = _bufferPixels;
 
     final layer = ref
         .read(bitmapProjectLayersProvider.notifier)
@@ -283,23 +282,20 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       final color = ref.read(bitmapProjectToolColorProvider);
       final height = (layer.height + yDiff).toInt() + gridSize.toInt();
       final width = (layer.width + xDiff).toInt() + gridSize.toInt();
-      final (_, addError) = await ref
+      ref
           .read(bitmapProjectLayerPixelsProvider.notifier)
           .add(BitmapProjectPixel(color: color, x: dx, y: dy), height, width);
-      if (addError != null) {
-        debugPrint('addError: $addError');
-      }
     }
+
+    setState(() {
+      _bufferPixels = [];
+      _bufferImage = null;
+    });
 
     _buildImage().then((image) {
       setState(() {
         _image = image;
       });
-    });
-
-    setState(() {
-      _bufferPixels = [];
-      _bufferImage = null;
     });
   }
 
@@ -337,14 +333,6 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
 
     return Stack(
       children: [
-        if (_bufferImage != null)
-          CustomPaint(
-            size: Size(
-              _bufferImage!.width.toDouble(),
-              _bufferImage!.height.toDouble(),
-            ),
-            painter: _LayerPainter(image: _bufferImage!),
-          ),
         if (_image != null)
           CustomPaint(
             size: Size(
@@ -353,10 +341,18 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
             ),
             painter: _LayerPainter(image: _image!),
           ),
+        if (_bufferImage != null)
+          CustomPaint(
+            size: Size(
+              _bufferImage!.width.toDouble(),
+              _bufferImage!.height.toDouble(),
+            ),
+            painter: _LayerPainter(image: _bufferImage!),
+          ),
         GestureDetector(
           onPanDown: (details) => _useSelectedTool(details.globalPosition),
           onPanUpdate: (details) => _useSelectedTool(details.globalPosition),
-          onPanEnd: (_) => _saveBufferPixels(),
+          onPanEnd: (_) => _saveBufferPixels(_bufferPixels),
           child: Container(
             width: size.width,
             height: size.height,
