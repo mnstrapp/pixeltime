@@ -288,7 +288,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   }
                   final (_, error) = await ref
                       .read(bitmapProjectHistoryProvider.notifier)
-                      .undo(projectIndex: projectIndex);
+                      .undo();
                   if (error != null) {
                     messenger.showSnackBar(SnackBar(content: Text(error)));
                   }
@@ -311,7 +311,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   }
                   final (_, error) = await ref
                       .read(bitmapProjectHistoryProvider.notifier)
-                      .redo(projectIndex: projectIndex);
+                      .redo();
                   if (error != null) {
                     messenger.showSnackBar(SnackBar(content: Text(error)));
                   }

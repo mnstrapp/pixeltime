@@ -78,9 +78,7 @@ class BitmapProjectLayersNotifier
         return refresh(projectIndex);
       },
     );
-    return ref
-        .read(bitmapProjectHistoryProvider.notifier)
-        .add(projectIndex: projectIndex, event: event);
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
   }
 
   void updateLayer({
@@ -107,9 +105,7 @@ class BitmapProjectLayersNotifier
         return refresh(projectIndex);
       },
     );
-    return ref
-        .read(bitmapProjectHistoryProvider.notifier)
-        .add(projectIndex: projectIndex, event: event);
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
   }
 
   Future<(bool, String?)> delete({
@@ -125,9 +121,7 @@ class BitmapProjectLayersNotifier
         return refresh(projectIndex);
       },
     );
-    return ref
-        .read(bitmapProjectHistoryProvider.notifier)
-        .add(projectIndex: projectIndex, event: event);
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
   }
 
   Future<(bool, String?)> toggleVisibility({
@@ -143,9 +137,7 @@ class BitmapProjectLayersNotifier
         return refresh(projectIndex);
       },
     );
-    return ref
-        .read(bitmapProjectHistoryProvider.notifier)
-        .add(projectIndex: projectIndex, event: event);
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
   }
 
   Future<(bool, String?)> reorder({
@@ -163,9 +155,7 @@ class BitmapProjectLayersNotifier
         return refresh(projectIndex);
       },
     );
-    return ref
-        .read(bitmapProjectHistoryProvider.notifier)
-        .add(projectIndex: projectIndex, event: event);
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
   }
 
   BitmapProjectLayer? topVisibleLayer({required int projectIndex}) {
@@ -232,8 +222,6 @@ class BitmapProjectLayerPixelsNotifier
         return (true, null);
       },
     );
-    return ref
-        .read(bitmapProjectHistoryProvider.notifier)
-        .add(projectIndex: projectIndex, event: event);
+    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
   }
 }
