@@ -32,6 +32,12 @@ class BitmapProjectLayersNotifier
     if (findError != null) {
       return (false, findError);
     }
+    if (projectIndex >= state.length) {
+      state = List.generate(
+        projectIndex + 1,
+        (index) => <BitmapProjectLayer>[],
+      );
+    }
     state[projectIndex] = layers;
     return (true, null);
   }

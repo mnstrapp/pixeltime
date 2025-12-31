@@ -343,12 +343,11 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final messenger = ScaffoldMessenger.of(context);
     ref.read(workspaceIndexProvider.notifier).index(index);
     _buildProjectMenuBar();
-    final projectIndex = ref.read(workspaceIndexProvider);
-    final project = ref.read(workspaceProjectsProvider)[projectIndex];
+    final project = ref.read(workspaceProjectsProvider)[index];
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
         .loadAll(
-          projectIndex: projectIndex,
+          projectIndex: index,
           project: ref
               .read(bitmapProjectsProvider)
               .firstWhere(

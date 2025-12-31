@@ -17,6 +17,9 @@ class BitmapProjectHistoryNotifier extends Notifier<List<History?>> {
     required int projectIndex,
     required HistoryEvent event,
   }) async {
+    if (projectIndex >= state.length) {
+      state = List.generate(projectIndex + 1, (index) => History());
+    }
     final history = state[projectIndex] ?? History();
     final (_, error) = await history.add(event);
     if (error != null) {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:pixeltime/workspace/workspace_provider.dart';
 
 import '../../models/bitmap_project_layer.dart';
 import '../../ui/theme.dart';
 import '../../workspace/workspace.dart';
 import '../../workspace/index_provider.dart';
+import '../../workspace/workspace_provider.dart';
 import 'edit_overlay.dart';
 import 'layers_provider.dart';
 import 'new_overlay.dart';
