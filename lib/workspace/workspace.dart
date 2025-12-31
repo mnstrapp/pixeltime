@@ -185,10 +185,9 @@ class WorkspaceState extends ConsumerState<Workspace> {
         .read(workspaceIndexProvider.notifier)
         .index(ref.read(workspaceProjectsProvider).length - 1);
     _buildProjectMenuBar();
-    final projectIndex = ref.read(workspaceIndexProvider);
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(projectIndex: projectIndex, project: project);
+        .loadAll(project: project);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -202,10 +201,9 @@ class WorkspaceState extends ConsumerState<Workspace> {
         .read(workspaceIndexProvider.notifier)
         .index(ref.read(workspaceProjectsProvider).length - 1);
     _buildProjectMenuBar();
-    final projectIndex = ref.read(workspaceIndexProvider);
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(projectIndex: projectIndex, project: project);
+        .loadAll(project: project);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -240,25 +238,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
                   }
                   ref.read(workspaceMenuBarProvider.notifier).clearSuffix();
                   _buildProjectMenuBar();
-                  final projectIndex = ref.read(workspaceIndexProvider);
-                  final project = ref.read(
-                    workspaceProjectsProvider,
-                  )[projectIndex];
-                  final (_, loadAllError) = await ref
-                      .read(bitmapProjectLayersProvider.notifier)
-                      .loadAll(
-                        projectIndex: projectIndex,
-                        project: ref
-                            .read(bitmapProjectsProvider)
-                            .firstWhere(
-                              (project) => project.id == project.id,
-                            ),
-                      );
-                  if (loadAllError != null) {
-                    messenger.showSnackBar(
-                      SnackBar(content: Text(loadAllError)),
-                    );
-                  }
                 },
               ),
             ],
@@ -347,7 +326,6 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
         .loadAll(
-          projectIndex: index,
           project: ref
               .read(bitmapProjectsProvider)
               .firstWhere(
@@ -374,10 +352,9 @@ class WorkspaceState extends ConsumerState<Workspace> {
         .read(workspaceIndexProvider.notifier)
         .index(ref.read(workspaceProjectsProvider).length - 1);
     _buildProjectMenuBar();
-    final projectIndex = ref.read(workspaceIndexProvider);
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(projectIndex: projectIndex, project: project);
+        .loadAll(project: project);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }

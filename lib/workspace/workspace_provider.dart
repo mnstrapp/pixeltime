@@ -60,15 +60,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     ref.read(workspaceTabsProvider.notifier).remove(index);
     ref.read(workspaceProjectsProvider.notifier).remove(index);
     final tabs = ref.read(workspaceTabsProvider);
-    ref
-        .read(workspaceIndexProvider.notifier)
-        .index(
-          tabs.isNotEmpty
-              ? index <= tabs.length - 1
-                    ? index
-                    : tabs.length - 1
-              : -1,
-        );
+    ref.read(workspaceIndexProvider.notifier).index(tabs.length - 1);
 
     if (tabs.isEmpty) {
       final (_, error) = await ref

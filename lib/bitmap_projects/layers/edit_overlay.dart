@@ -38,15 +38,12 @@ class _BitmapProjectLayersEditOverlayState
       return;
     }
 
-    final projectIndex = ref.watch(workspaceIndexProvider);
-
     final layer = widget.layer.copyWith(name: _nameController.text);
 
     try {
       final (_, editError) = await ref
           .read(bitmapProjectLayersProvider.notifier)
           .update(
-            projectIndex: projectIndex,
             layer: layer,
             originalLayer: widget.layer,
           );

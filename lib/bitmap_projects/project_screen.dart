@@ -180,13 +180,9 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
   }
 
   Future<ui.Image> _buildImage() async {
-    final projectIndex = ref.watch(workspaceIndexProvider);
+    final (project, _) = ref.watch(workspaceProvider.notifier).currentProject();
 
-    final layer = ref
-        .watch(bitmapProjectLayersProvider)[projectIndex]
-        .firstWhere(
-          (layer) => layer.id == widget.id,
-        );
+    final layer = project!.layers.firstWhere((layer) => layer.id == widget.id);
 
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
@@ -248,11 +244,9 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       return;
     }
 
-    final projectIndex = ref.watch(workspaceIndexProvider);
-
     final layer = ref
         .read(bitmapProjectLayersProvider.notifier)
-        .topVisibleLayer(projectIndex: projectIndex);
+        .topVisibleLayer();
     if (layer == null) {
       return;
     }
@@ -286,7 +280,6 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       ref
           .read(bitmapProjectLayerPixelsProvider.notifier)
           .add(
-            projectIndex: projectIndex,
             pixel: BitmapProjectPixel(color: color, x: dx, y: dy),
             height: height,
             width: width,
@@ -325,6 +318,9 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final projectIndex = ref.watch(workspaceIndexProvider);
+    if (projectIndex >= ref.watch(bitmapProjectLayersProvider).length) {
+      return const CircularProgressIndicator();
+    }
     final layers = ref.watch(bitmapProjectLayersProvider)[projectIndex];
     if (layers.isEmpty) {
       return const CircularProgressIndicator();

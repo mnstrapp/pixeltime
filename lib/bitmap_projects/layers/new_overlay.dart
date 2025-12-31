@@ -52,7 +52,7 @@ class _BitmapProjectLayersNewOverlayState
     try {
       final (_, createError) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .create(projectIndex: projectIndex, layer: layer);
+          .create(layer: layer);
       if (createError != null) {
         setState(() {
           _errorMessage = createError;

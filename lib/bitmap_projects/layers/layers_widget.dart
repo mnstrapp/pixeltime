@@ -60,7 +60,6 @@ class _LayerList extends ConsumerStatefulWidget {
 
 class _LayerListState extends ConsumerState<_LayerList> {
   Future<void> _loadAll() async {
-    final projectIndex = ref.watch(workspaceIndexProvider);
     final (project, projectError) = ref
         .watch(workspaceProvider.notifier)
         .currentProject();
@@ -70,7 +69,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
 
     final (_, loadAllError) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(projectIndex: projectIndex, project: project);
+        .loadAll(project: project);
     if (loadAllError != null) {
       ScaffoldMessenger.of(
         context,
@@ -80,7 +79,6 @@ class _LayerListState extends ConsumerState<_LayerList> {
   }
 
   Future<void> _onToggleVisibility(BitmapProjectLayer layer) async {
-    final projectIndex = ref.watch(workspaceIndexProvider);
     final (project, projectError) = ref
         .watch(workspaceProvider.notifier)
         .currentProject();
@@ -90,7 +88,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
 
     final (_, toggleVisibilityError) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .toggleVisibility(projectIndex: projectIndex, layer: layer);
+        .toggleVisibility(layer: layer);
     if (toggleVisibilityError != null) {
       ScaffoldMessenger.of(
         context,
@@ -126,10 +124,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
   }
 
   void _onDelete(BitmapProjectLayer layer) {
-    final projectIndex = ref.watch(workspaceIndexProvider);
-    ref
-        .read(bitmapProjectLayersProvider.notifier)
-        .delete(projectIndex: projectIndex, layer: layer);
+    ref.read(bitmapProjectLayersProvider.notifier).delete(layer: layer);
   }
 
   Future<void> _onDropped(
@@ -137,13 +132,11 @@ class _LayerListState extends ConsumerState<_LayerList> {
     BitmapProjectLayer layer,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
-    final projectIndex = ref.watch(workspaceIndexProvider);
 
     final newPosition = layer.position;
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
         .reorder(
-          projectIndex: projectIndex,
           layer: droppedLayer,
           newPosition: newPosition,
         );
@@ -156,7 +149,6 @@ class _LayerListState extends ConsumerState<_LayerList> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      final projectIndex = ref.watch(workspaceIndexProvider);
       final (project, projectError) = ref
           .watch(workspaceProvider.notifier)
           .currentProject();
@@ -166,7 +158,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
 
       final (_, error) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(projectIndex: projectIndex, project: project);
+          .loadAll(project: project);
       if (error != null) {
         ScaffoldMessenger.of(
           context,
@@ -178,6 +170,10 @@ class _LayerListState extends ConsumerState<_LayerList> {
   @override
   Widget build(BuildContext context) {
     final projectIndex = ref.watch(workspaceIndexProvider);
+    if (projectIndex >= ref.watch(bitmapProjectLayersProvider).length) {
+      return const CircularProgressIndicator();
+    }
+
     final layers = ref.watch(bitmapProjectLayersProvider)[projectIndex];
     final color = Theme.of(context).colorScheme.inversePrimary;
     final size = MediaQuery.sizeOf(context);
@@ -331,7 +327,6 @@ class _LayerActionsState extends ConsumerState<_LayerActions> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final projectIndex = ref.watch(workspaceIndexProvider);
       final (project, projectError) = ref
           .watch(workspaceProvider.notifier)
           .currentProject();
@@ -339,9 +334,7 @@ class _LayerActionsState extends ConsumerState<_LayerActions> {
         return;
       }
 
-      ref
-          .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(projectIndex: projectIndex, project: project);
+      ref.read(bitmapProjectLayersProvider.notifier).loadAll(project: project);
     });
   }
 
