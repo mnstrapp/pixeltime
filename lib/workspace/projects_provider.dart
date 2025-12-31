@@ -1,27 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../bitmap_projects/project_screen.dart';
+import '../models/bitmap_project.dart';
 import 'index_provider.dart';
 
 final workspaceProjectsProvider =
-    NotifierProvider<WorkspaceProjectsNotifier, List<BitmapProjectScreen>>(() {
+    NotifierProvider<WorkspaceProjectsNotifier, List<BitmapProject>>(() {
       return WorkspaceProjectsNotifier();
     });
 
-class WorkspaceProjectsNotifier extends Notifier<List<BitmapProjectScreen>> {
+class WorkspaceProjectsNotifier extends Notifier<List<BitmapProject>> {
   @override
-  List<BitmapProjectScreen> build() {
+  List<BitmapProject> build() {
     return [];
   }
 
-  (BitmapProjectScreen, String?) add({
-    required BitmapProjectScreen projectScreen,
+  (BitmapProject, String?) add({
+    required BitmapProject project,
   }) {
-    state = [...state, projectScreen];
-    return (projectScreen, null);
+    state = [...state, project];
+    return (project, null);
   }
 
-  BitmapProjectScreen? get projectScreen {
+  BitmapProject? get project {
     if (state.isEmpty) {
       return null;
     }

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:pixeltime/workspace/workspace_provider.dart';
 
-import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
 import '../../ui/theme.dart';
 import '../../workspace/workspace.dart';
+import '../../workspace/index_provider.dart';
 import 'edit_overlay.dart';
 import 'layers_provider.dart';
 import 'new_overlay.dart';
 
 class BitmapProjectLayersWidget extends ConsumerWidget {
-  final BitmapProject project;
-  const BitmapProjectLayersWidget({super.key, required this.project});
+  const BitmapProjectLayersWidget({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,8 +43,8 @@ class BitmapProjectLayersWidget extends ConsumerWidget {
         spacing: BaseTheme.borderRadiusSmall,
         children: [
           Text('Layers', style: TextStyle(color: foregroundColor)),
-          Expanded(child: _LayerList(project: project)),
-          _LayerActions(project: project),
+          Expanded(child: _LayerList()),
+          _LayerActions(),
         ],
       ),
     );
@@ -50,8 +52,7 @@ class BitmapProjectLayersWidget extends ConsumerWidget {
 }
 
 class _LayerList extends ConsumerStatefulWidget {
-  final BitmapProject project;
-  const _LayerList({required this.project});
+  const _LayerList();
 
   @override
   ConsumerState<_LayerList> createState() => _LayerListState();
@@ -59,9 +60,17 @@ class _LayerList extends ConsumerStatefulWidget {
 
 class _LayerListState extends ConsumerState<_LayerList> {
   Future<void> _loadAll() async {
+    final projectIndex = ref.watch(workspaceIndexProvider);
+    final (project, projectError) = ref
+        .watch(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null || project == null) {
+      return;
+    }
+
     final (_, loadAllError) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: widget.project);
+        .loadAll(projectIndex: projectIndex, project: project);
     if (loadAllError != null) {
       ScaffoldMessenger.of(
         context,
@@ -71,9 +80,17 @@ class _LayerListState extends ConsumerState<_LayerList> {
   }
 
   Future<void> _onToggleVisibility(BitmapProjectLayer layer) async {
+    final projectIndex = ref.watch(workspaceIndexProvider);
+    final (project, projectError) = ref
+        .watch(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null || project == null) {
+      return;
+    }
+
     final (_, toggleVisibilityError) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .toggleVisibility(layer: layer);
+        .toggleVisibility(projectIndex: projectIndex, layer: layer);
     if (toggleVisibilityError != null) {
       ScaffoldMessenger.of(
         context,
@@ -84,10 +101,17 @@ class _LayerListState extends ConsumerState<_LayerList> {
   }
 
   void _onEdit(BitmapProjectLayer layer) {
+    final (project, projectError) = ref
+        .watch(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null || project == null) {
+      return;
+    }
+
     final workspaceState = Workspace.of(context);
     workspaceState.showOverlay(
       BitmapProjectLayersEditOverlay(
-        project: widget.project,
+        project: project,
         layer: layer,
         onCancel: workspaceState.hideOverlay,
         onSubmit: _onEditSubmit,
@@ -102,7 +126,10 @@ class _LayerListState extends ConsumerState<_LayerList> {
   }
 
   void _onDelete(BitmapProjectLayer layer) {
-    ref.read(bitmapProjectLayersProvider.notifier).delete(layer: layer);
+    final projectIndex = ref.watch(workspaceIndexProvider);
+    ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .delete(projectIndex: projectIndex, layer: layer);
   }
 
   Future<void> _onDropped(
@@ -110,10 +137,16 @@ class _LayerListState extends ConsumerState<_LayerList> {
     BitmapProjectLayer layer,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
+    final projectIndex = ref.watch(workspaceIndexProvider);
+
     final newPosition = layer.position;
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .reorder(layer: droppedLayer, newPosition: newPosition);
+        .reorder(
+          projectIndex: projectIndex,
+          layer: droppedLayer,
+          newPosition: newPosition,
+        );
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -123,9 +156,17 @@ class _LayerListState extends ConsumerState<_LayerList> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      final projectIndex = ref.watch(workspaceIndexProvider);
+      final (project, projectError) = ref
+          .watch(workspaceProvider.notifier)
+          .currentProject();
+      if (projectError != null || project == null) {
+        return;
+      }
+
       final (_, error) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(project: widget.project);
+          .loadAll(projectIndex: projectIndex, project: project);
       if (error != null) {
         ScaffoldMessenger.of(
           context,
@@ -136,7 +177,8 @@ class _LayerListState extends ConsumerState<_LayerList> {
 
   @override
   Widget build(BuildContext context) {
-    final layers = ref.watch(bitmapProjectLayersProvider);
+    final projectIndex = ref.watch(workspaceIndexProvider);
+    final layers = ref.watch(bitmapProjectLayersProvider)[projectIndex];
     final color = Theme.of(context).colorScheme.inversePrimary;
     final size = MediaQuery.sizeOf(context);
     return Container(
@@ -258,8 +300,7 @@ class _LayerItem extends StatelessWidget {
 }
 
 class _LayerActions extends ConsumerStatefulWidget {
-  final BitmapProject project;
-  const _LayerActions({required this.project});
+  const _LayerActions();
 
   @override
   ConsumerState<_LayerActions> createState() => _LayerActionsState();
@@ -270,7 +311,6 @@ class _LayerActionsState extends ConsumerState<_LayerActions> {
     final workspaceState = Workspace.of(context);
     workspaceState.showOverlay(
       BitmapProjectLayersNewOverlay(
-        project: widget.project,
         onCancel: workspaceState.hideOverlay,
         onSubmit: _addLayer,
       ),
@@ -291,9 +331,17 @@ class _LayerActionsState extends ConsumerState<_LayerActions> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final projectIndex = ref.watch(workspaceIndexProvider);
+      final (project, projectError) = ref
+          .watch(workspaceProvider.notifier)
+          .currentProject();
+      if (projectError != null || project == null) {
+        return;
+      }
+
       ref
           .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(project: widget.project);
+          .loadAll(projectIndex: projectIndex, project: project);
     });
   }
 

@@ -13,8 +13,7 @@ import 'fill/options.dart';
 import 'tool.dart';
 
 class BitmapProjectToolsWidget extends ConsumerWidget {
-  final BitmapProject project;
-  const BitmapProjectToolsWidget({super.key, required this.project});
+  const BitmapProjectToolsWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,7 +44,7 @@ class BitmapProjectToolsWidget extends ConsumerWidget {
         spacing: BaseTheme.borderRadiusSmall,
         children: [
           Text('Tools', style: TextStyle(color: foregroundColor)),
-          Expanded(child: _ToolList(project: project)),
+          Expanded(child: _ToolList()),
           options ?? const SizedBox.shrink(),
         ],
       ),
@@ -54,8 +53,7 @@ class BitmapProjectToolsWidget extends ConsumerWidget {
 }
 
 class _ToolList extends ConsumerWidget {
-  final BitmapProject project;
-  const _ToolList({required this.project});
+  const _ToolList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

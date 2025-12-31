@@ -10,6 +10,7 @@ import '../bitmap_projects/history_provider.dart';
 import '../bitmap_projects/manage_projects_overlay.dart';
 import '../bitmap_projects/new_overlay.dart';
 import '../bitmap_projects/open_overlay.dart';
+import '../bitmap_projects/project_screen.dart';
 import '../bitmap_projects/resize_overlay.dart';
 import '../models/bitmap_project.dart';
 import '../ui/overlay_content.dart';
@@ -180,10 +181,14 @@ class WorkspaceState extends ConsumerState<Workspace> {
       );
       return;
     }
+    ref
+        .read(workspaceIndexProvider.notifier)
+        .index(ref.read(workspaceProjectsProvider).length - 1);
     _buildProjectMenuBar();
+    final projectIndex = ref.read(workspaceIndexProvider);
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll(projectIndex: projectIndex, project: project);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -193,10 +198,14 @@ class WorkspaceState extends ConsumerState<Workspace> {
   Future<void> _openProject(BitmapProject project) async {
     final messenger = ScaffoldMessenger.of(context);
     ref.read(workspaceProvider.notifier).add(project);
+    ref
+        .read(workspaceIndexProvider.notifier)
+        .index(ref.read(workspaceProjectsProvider).length - 1);
     _buildProjectMenuBar();
+    final projectIndex = ref.read(workspaceIndexProvider);
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll(projectIndex: projectIndex, project: project);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -221,31 +230,34 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 icon: Icons.close,
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
-                  final (_, error) = await ref
+                  final (_, removeError) = await ref
                       .read(workspaceProvider.notifier)
-                      .remove(ref.read(workspaceIndexProvider));
-                  if (error != null) {
-                    messenger.showSnackBar(SnackBar(content: Text(error)));
+                      .remove();
+                  if (removeError != null) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(removeError)),
+                    );
                   }
                   ref.read(workspaceMenuBarProvider.notifier).clearSuffix();
                   _buildProjectMenuBar();
-                  final projectScreen = ref
-                      .read(workspaceProjectsProvider.notifier)
-                      .projectScreen;
-                  if (projectScreen != null) {
-                    final (_, error) = await ref
-                        .read(bitmapProjectLayersProvider.notifier)
-                        .loadAll(
-                          project: ref
-                              .read(bitmapProjectsProvider)
-                              .firstWhere(
-                                (project) =>
-                                    project.id == projectScreen.projectId,
-                              ),
-                        );
-                    if (error != null) {
-                      messenger.showSnackBar(SnackBar(content: Text(error)));
-                    }
+                  final projectIndex = ref.read(workspaceIndexProvider);
+                  final project = ref.read(
+                    workspaceProjectsProvider,
+                  )[projectIndex];
+                  final (_, loadAllError) = await ref
+                      .read(bitmapProjectLayersProvider.notifier)
+                      .loadAll(
+                        projectIndex: projectIndex,
+                        project: ref
+                            .read(bitmapProjectsProvider)
+                            .firstWhere(
+                              (project) => project.id == project.id,
+                            ),
+                      );
+                  if (loadAllError != null) {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(loadAllError)),
+                    );
                   }
                 },
               ),
@@ -264,14 +276,19 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 icon: Icons.undo,
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
-                  final history = ref.read(bitmapProjectHistoryProvider);
-                  if (!history.canUndo) {
+                  final projectIndex = ref.read(workspaceIndexProvider);
+                  final history = ref.read(
+                    bitmapProjectHistoryProvider,
+                  )[projectIndex];
+                  if (history == null || !history.canUndo) {
                     messenger.showSnackBar(
                       SnackBar(content: Text('No events to undo')),
                     );
                     return;
                   }
-                  final (_, error) = await history.undo();
+                  final (_, error) = await ref
+                      .read(bitmapProjectHistoryProvider.notifier)
+                      .undo(projectIndex: projectIndex);
                   if (error != null) {
                     messenger.showSnackBar(SnackBar(content: Text(error)));
                   }
@@ -282,14 +299,19 @@ class WorkspaceState extends ConsumerState<Workspace> {
                 icon: Icons.redo,
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
-                  final history = ref.read(bitmapProjectHistoryProvider);
-                  if (!history.canRedo) {
+                  final projectIndex = ref.read(workspaceIndexProvider);
+                  final history = ref.read(
+                    bitmapProjectHistoryProvider,
+                  )[projectIndex];
+                  if (history == null || !history.canRedo) {
                     messenger.showSnackBar(
                       SnackBar(content: Text('No events to redo')),
                     );
                     return;
                   }
-                  final (_, error) = await history.redo();
+                  final (_, error) = await ref
+                      .read(bitmapProjectHistoryProvider.notifier)
+                      .redo(projectIndex: projectIndex);
                   if (error != null) {
                     messenger.showSnackBar(SnackBar(content: Text(error)));
                   }
@@ -321,22 +343,20 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final messenger = ScaffoldMessenger.of(context);
     ref.read(workspaceIndexProvider.notifier).index(index);
     _buildProjectMenuBar();
-    final projectScreen = ref
-        .read(workspaceProjectsProvider.notifier)
-        .projectScreen;
-    if (projectScreen != null) {
-      final (_, error) = await ref
-          .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(
-            project: ref
-                .read(bitmapProjectsProvider)
-                .firstWhere(
-                  (project) => project.id == projectScreen.projectId,
-                ),
-          );
-      if (error != null) {
-        messenger.showSnackBar(SnackBar(content: Text(error)));
-      }
+    final projectIndex = ref.read(workspaceIndexProvider);
+    final project = ref.read(workspaceProjectsProvider)[projectIndex];
+    final (_, error) = await ref
+        .read(bitmapProjectLayersProvider.notifier)
+        .loadAll(
+          projectIndex: projectIndex,
+          project: ref
+              .read(bitmapProjectsProvider)
+              .firstWhere(
+                (p) => p.id == project.id,
+              ),
+        );
+    if (error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
@@ -351,10 +371,14 @@ class WorkspaceState extends ConsumerState<Workspace> {
       );
       return;
     }
+    ref
+        .read(workspaceIndexProvider.notifier)
+        .index(ref.read(workspaceProjectsProvider).length - 1);
     _buildProjectMenuBar();
+    final projectIndex = ref.read(workspaceIndexProvider);
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll(projectIndex: projectIndex, project: project);
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -381,9 +405,11 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final recentProjects = bitmapProjects.take(5).toList();
 
     final tabs = ref.watch(workspaceTabsProvider);
-    final projectScreen = ref
-        .watch(workspaceProjectsProvider.notifier)
-        .projectScreen;
+    final projectIndex = ref.read(workspaceIndexProvider);
+    final projects = ref.read(workspaceProjectsProvider);
+    final project = projectIndex >= 0 && projectIndex < projects.length
+        ? projects[projectIndex]
+        : null;
 
     return Scaffold(
       body: SafeArea(
@@ -395,59 +421,60 @@ class WorkspaceState extends ConsumerState<Workspace> {
               controller: _overlayController,
               overlayChildBuilder: (context) => _overlayContent!,
             ),
-            projectScreen ??
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Center(
-                      child: FilledButton.icon(
-                        icon: const Icon(Icons.add),
-                        label: const Text('New Project'),
-                        onPressed: () {
-                          showOverlay(
-                            NewBitmapProjectOverlay(
-                              onCancel: hideOverlay,
-                              onSubmit: _onSubmitNewProject,
-                            ),
-                          );
-                        },
+            project != null
+                ? BitmapProjectScreen()
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Center(
+                        child: FilledButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text('New Project'),
+                          onPressed: () {
+                            showOverlay(
+                              NewBitmapProjectOverlay(
+                                onCancel: hideOverlay,
+                                onSubmit: _onSubmitNewProject,
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    if (recentProjects.isNotEmpty)
-                      Container(
-                        width: size.width > BreakPoints.mobileBreakpoint
-                            ? size.width * 0.33
-                            : size.width,
-                        margin: EdgeInsets.all(
-                          BaseTheme.borderRadiusMedium,
-                        ),
-                        padding: EdgeInsets.all(
-                          BaseTheme.borderRadiusSmall,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(
+                      if (recentProjects.isNotEmpty)
+                        Container(
+                          width: size.width > BreakPoints.mobileBreakpoint
+                              ? size.width * 0.33
+                              : size.width,
+                          margin: EdgeInsets.all(
+                            BaseTheme.borderRadiusMedium,
+                          ),
+                          padding: EdgeInsets.all(
                             BaseTheme.borderRadiusSmall,
                           ),
-                        ),
-                        child: Column(
-                          children: [
-                            Text('Recent Projects'),
-                            ...recentProjects.map(
-                              (project) => BitmapProjectTile(
-                                project: project,
-                                onTap: () {
-                                  _openProject(project);
-                                },
-                              ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(
+                              BaseTheme.borderRadiusSmall,
                             ),
-                          ],
+                          ),
+                          child: Column(
+                            children: [
+                              Text('Recent Projects'),
+                              ...recentProjects.map(
+                                (project) => BitmapProjectTile(
+                                  project: project,
+                                  onTap: () {
+                                    _openProject(project);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
             Positioned(
               top: 0,
               left: 0,

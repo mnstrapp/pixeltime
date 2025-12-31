@@ -9,6 +9,8 @@ import '../models/bitmap_project.dart';
 import '../models/bitmap_project_layer.dart';
 import '../ui/grid_provider.dart';
 import '../ui/theme.dart';
+import '../workspace/index_provider.dart';
+import '../workspace/workspace_provider.dart';
 import 'bitmap_projects_provider.dart';
 import 'layers/layers_provider.dart';
 import 'layers/layers_widget.dart';
@@ -19,8 +21,7 @@ import 'tools/tools_widget.dart';
 import '../ui/transparency_grid.dart';
 
 class BitmapProjectScreen extends ConsumerStatefulWidget {
-  final String projectId;
-  const BitmapProjectScreen({super.key, required this.projectId});
+  const BitmapProjectScreen({super.key});
 
   @override
   ConsumerState<BitmapProjectScreen> createState() =>
@@ -68,18 +69,10 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
       return const SizedBox.shrink();
     }
 
-    final projects = ref.watch(bitmapProjectsProvider);
-    if (projects.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    BitmapProject? project;
-    if (projects.any((project) => project.id == widget.projectId)) {
-      project = projects.firstWhere(
-        (project) => project.id == widget.projectId,
-      );
-    }
-    if (project == null) {
+    final (project, projectError) = ref
+        .watch(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null || project == null) {
       return const SizedBox.shrink();
     }
 
@@ -88,7 +81,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
         TransparencyGrid(size: _size),
         Stack(
           children: [
-            for (final layer in project!.layers.reversed)
+            for (final layer in project.layers.reversed)
               Positioned(
                 left: layer.x.toDouble(),
                 top: layer.y.toDouble(),
@@ -101,7 +94,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
           top: 0,
           bottom: 0,
           child: Center(
-            child: BitmapProjectToolsWidget(project: project),
+            child: BitmapProjectToolsWidget(),
           ),
         ),
         Positioned(
@@ -109,7 +102,7 @@ class _BitmapProjectScreenState extends ConsumerState<BitmapProjectScreen>
           top: 0,
           bottom: 0,
           child: Center(
-            child: BitmapProjectLayersWidget(project: project),
+            child: BitmapProjectLayersWidget(),
           ),
         ),
       ],
@@ -187,9 +180,14 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
   }
 
   Future<ui.Image> _buildImage() async {
+    final projectIndex = ref.watch(workspaceIndexProvider);
+
     final layer = ref
-        .watch(bitmapProjectLayersProvider)
-        .firstWhere((layer) => layer.id == widget.id);
+        .watch(bitmapProjectLayersProvider)[projectIndex]
+        .firstWhere(
+          (layer) => layer.id == widget.id,
+        );
+
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
@@ -250,9 +248,11 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       return;
     }
 
+    final projectIndex = ref.watch(workspaceIndexProvider);
+
     final layer = ref
         .read(bitmapProjectLayersProvider.notifier)
-        .topVisibleLayer();
+        .topVisibleLayer(projectIndex: projectIndex);
     if (layer == null) {
       return;
     }
@@ -285,7 +285,12 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       final width = (layer.width + xDiff).toInt() + gridSize.toInt();
       ref
           .read(bitmapProjectLayerPixelsProvider.notifier)
-          .add(BitmapProjectPixel(color: color, x: dx, y: dy), height, width);
+          .add(
+            projectIndex: projectIndex,
+            pixel: BitmapProjectPixel(color: color, x: dx, y: dy),
+            height: height,
+            width: width,
+          );
     }
 
     _buildImage().then((image) {
@@ -319,7 +324,8 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final layers = ref.watch(bitmapProjectLayersProvider);
+    final projectIndex = ref.watch(workspaceIndexProvider);
+    final layers = ref.watch(bitmapProjectLayersProvider)[projectIndex];
     if (layers.isEmpty) {
       return const CircularProgressIndicator();
     }

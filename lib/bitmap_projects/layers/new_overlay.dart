@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
+import '../../workspace/index_provider.dart';
+import '../../workspace/workspace_provider.dart';
 import 'layers_provider.dart';
 
 class BitmapProjectLayersNewOverlay extends ConsumerStatefulWidget {
-  final BitmapProject project;
   final VoidCallback onCancel;
   final Function(BitmapProjectLayer) onSubmit;
 
   const BitmapProjectLayersNewOverlay({
     super.key,
-    required this.project,
     required this.onCancel,
     required this.onSubmit,
   });
@@ -35,17 +34,25 @@ class _BitmapProjectLayersNewOverlayState
       return;
     }
 
-    final layers = ref.read(bitmapProjectLayersProvider);
+    final projectIndex = ref.watch(workspaceIndexProvider);
+    final (project, projectError) = ref
+        .watch(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null || project == null) {
+      return;
+    }
+
+    final layers = ref.read(bitmapProjectLayersProvider)[projectIndex];
     final layer = BitmapProjectLayer(
       name: _nameController.text,
-      projectId: widget.project.id!,
+      projectId: project.id!,
       position: layers.isNotEmpty ? layers.last.position + 1 : 0,
     );
 
     try {
       final (_, createError) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .create(layer: layer);
+          .create(projectIndex: projectIndex, layer: layer);
       if (createError != null) {
         setState(() {
           _errorMessage = createError;

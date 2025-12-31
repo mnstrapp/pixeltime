@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
+import '../../workspace/index_provider.dart';
 import 'layers_provider.dart';
 
 class BitmapProjectLayersEditOverlay extends ConsumerStatefulWidget {
@@ -37,12 +38,18 @@ class _BitmapProjectLayersEditOverlayState
       return;
     }
 
+    final projectIndex = ref.watch(workspaceIndexProvider);
+
     final layer = widget.layer.copyWith(name: _nameController.text);
 
     try {
       final (_, editError) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .update(layer: layer, originalLayer: widget.layer);
+          .update(
+            projectIndex: projectIndex,
+            layer: layer,
+            originalLayer: widget.layer,
+          );
       if (editError != null) {
         setState(() {
           _errorMessage = editError;

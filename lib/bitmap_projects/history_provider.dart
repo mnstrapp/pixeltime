@@ -3,41 +3,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'history.dart';
 
 final bitmapProjectHistoryProvider =
-    NotifierProvider<BitmapProjectHistoryNotifier, History>(() {
+    NotifierProvider<BitmapProjectHistoryNotifier, List<History?>>(() {
       return BitmapProjectHistoryNotifier();
     });
 
-class BitmapProjectHistoryNotifier extends Notifier<History> {
+class BitmapProjectHistoryNotifier extends Notifier<List<History?>> {
   @override
-  History build() {
-    return History();
+  List<History?> build() {
+    return [];
   }
 
-  Future<(bool, String?)> add(HistoryEvent event) async {
-    final (_, error) = await state.add(event);
+  Future<(bool, String?)> add({
+    required int projectIndex,
+    required HistoryEvent event,
+  }) async {
+    final history = state[projectIndex] ?? History();
+    final (_, error) = await history.add(event);
     if (error != null) {
       return (false, error);
     }
     return (true, null);
   }
 
-  Future<(bool, String?)> undo() async {
-    final (_, error) = await state.undo();
+  Future<(bool, String?)> undo({required int projectIndex}) async {
+    final history = state[projectIndex] ?? History();
+    final (_, error) = await history.undo();
     if (error != null) {
       return (false, error);
     }
     return (true, null);
   }
 
-  Future<(bool, String?)> redo() async {
-    final (_, error) = await state.redo();
+  Future<(bool, String?)> redo({required int projectIndex}) async {
+    final history = state[projectIndex] ?? History();
+    final (_, error) = await history.redo();
     if (error != null) {
       return (false, error);
     }
     return (true, null);
   }
 
-  void clear() {
-    state = History();
+  void clear({required int projectIndex}) {
+    state[projectIndex] = History();
   }
 }

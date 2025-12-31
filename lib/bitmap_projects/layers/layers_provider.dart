@@ -8,17 +8,22 @@ import '../history_provider.dart';
 import 'layer_history_event.dart';
 
 final bitmapProjectLayersProvider =
-    NotifierProvider<BitmapProjectLayersNotifier, List<BitmapProjectLayer>>(() {
+    NotifierProvider<
+      BitmapProjectLayersNotifier,
+      List<List<BitmapProjectLayer>>
+    >(() {
       return BitmapProjectLayersNotifier();
     });
 
-class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
+class BitmapProjectLayersNotifier
+    extends Notifier<List<List<BitmapProjectLayer>>> {
   @override
-  List<BitmapProjectLayer> build() {
-    return [];
+  List<List<BitmapProjectLayer>> build() {
+    return <List<BitmapProjectLayer>>[];
   }
 
   Future<(bool, String?)> loadAll({
+    required int projectIndex,
     required BitmapProject project,
   }) async {
     final (layers, findError) = await BitmapProjectLayer.findAllByProjectId(
@@ -27,18 +32,21 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     if (findError != null) {
       return (false, findError);
     }
-    state = layers;
+    state[projectIndex] = layers;
     return (true, null);
   }
 
-  Future<(bool, String?)> refresh() async {
+  Future<(bool, String?)> refresh(int projectIndex) async {
     final (project, currentProjectError) = ref
         .read(workspaceProvider.notifier)
         .currentProject();
     if (currentProjectError != null) {
       return (false, currentProjectError);
     }
-    final (loadSuccess, loadError) = await loadAll(project: project!);
+    final (loadSuccess, loadError) = await loadAll(
+      projectIndex: projectIndex,
+      project: project!,
+    );
     if (loadError != null) {
       return (false, loadError);
     }
@@ -52,25 +60,34 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
   }
 
   Future<(bool, String?)> create({
+    required int projectIndex,
     required BitmapProjectLayer layer,
   }) async {
     final event = LayerAddHistoryEvent(
       layer: layer,
       onExecute: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
       onUndo: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
     );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+    return ref
+        .read(bitmapProjectHistoryProvider.notifier)
+        .add(projectIndex: projectIndex, event: event);
   }
 
-  void updateLayer(BitmapProjectLayer layer) {
-    state = state.map((l) => l.id == layer.id ? layer : l).toList();
+  void updateLayer({
+    required int projectIndex,
+    required BitmapProjectLayer layer,
+  }) {
+    state[projectIndex] = state[projectIndex]
+        .map((l) => l.id == layer.id ? layer : l)
+        .toList();
   }
 
   Future<(bool, String?)> update({
+    required int projectIndex,
     required BitmapProjectLayer layer,
     required BitmapProjectLayer originalLayer,
   }) async {
@@ -78,46 +95,55 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
       layer: layer,
       originalLayer: originalLayer,
       onExecute: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
       onUndo: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
     );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+    return ref
+        .read(bitmapProjectHistoryProvider.notifier)
+        .add(projectIndex: projectIndex, event: event);
   }
 
   Future<(bool, String?)> delete({
+    required int projectIndex,
     required BitmapProjectLayer layer,
   }) async {
     final event = LayerDeleteHistoryEvent(
       layer: layer,
       onExecute: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
       onUndo: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
     );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+    return ref
+        .read(bitmapProjectHistoryProvider.notifier)
+        .add(projectIndex: projectIndex, event: event);
   }
 
   Future<(bool, String?)> toggleVisibility({
+    required int projectIndex,
     required BitmapProjectLayer layer,
   }) async {
     final event = LayerToggleVisibilityHistoryEvent(
       layer: layer,
       onExecute: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
       onUndo: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
     );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+    return ref
+        .read(bitmapProjectHistoryProvider.notifier)
+        .add(projectIndex: projectIndex, event: event);
   }
 
   Future<(bool, String?)> reorder({
+    required int projectIndex,
     required BitmapProjectLayer layer,
     required int newPosition,
   }) async {
@@ -125,20 +151,22 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
       layer: layer,
       newPosition: newPosition,
       onExecute: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
       onUndo: () async {
-        return refresh();
+        return refresh(projectIndex);
       },
     );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+    return ref
+        .read(bitmapProjectHistoryProvider.notifier)
+        .add(projectIndex: projectIndex, event: event);
   }
 
-  BitmapProjectLayer? topVisibleLayer() {
+  BitmapProjectLayer? topVisibleLayer({required int projectIndex}) {
     BitmapProjectLayer? layer;
-    for (var i = 0; i < state.length; i++) {
-      if (state[i].visible) {
-        layer = state[i];
+    for (var i = 0; i < state[projectIndex].length; i++) {
+      if (state[projectIndex][i].visible) {
+        layer = state[projectIndex][i];
         break;
       }
     }
@@ -149,36 +177,31 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
 final bitmapProjectLayerPixelsProvider =
     NotifierProvider<
       BitmapProjectLayerPixelsNotifier,
-      List<BitmapProjectPixel>
+      List<List<BitmapProjectPixel>>
     >(() {
       return BitmapProjectLayerPixelsNotifier();
     });
 
 class BitmapProjectLayerPixelsNotifier
-    extends Notifier<List<BitmapProjectPixel>> {
+    extends Notifier<List<List<BitmapProjectPixel>>> {
   @override
-  List<BitmapProjectPixel> build() {
-    final layer = ref
-        .read(bitmapProjectLayersProvider.notifier)
-        .topVisibleLayer();
-    if (layer == null) {
-      return [];
-    }
-    return layer.pixels;
+  List<List<BitmapProjectPixel>> build() {
+    return <List<BitmapProjectPixel>>[];
   }
 
-  void set(BitmapProjectLayer layer) {
-    state = layer.pixels;
+  void set({required int projectIndex, required BitmapProjectLayer layer}) {
+    state[projectIndex] = layer.pixels;
   }
 
-  Future<(bool, String?)> add(
-    BitmapProjectPixel pixel,
-    int height,
-    int width,
-  ) async {
+  Future<(bool, String?)> add({
+    required int projectIndex,
+    required BitmapProjectPixel pixel,
+    required int height,
+    required int width,
+  }) async {
     final layer = ref
         .read(bitmapProjectLayersProvider.notifier)
-        .topVisibleLayer();
+        .topVisibleLayer(projectIndex: projectIndex);
     if (layer == null) {
       return (false, 'Layer not found');
     }
@@ -188,14 +211,23 @@ class BitmapProjectLayerPixelsNotifier
       height: height,
       width: width,
       onExecute: () async {
-        ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
+        ref
+            .read(bitmapProjectLayersProvider.notifier)
+            .updateLayer(projectIndex: projectIndex, layer: layer);
         return (true, null);
       },
       onUndo: () async {
-        ref.read(bitmapProjectLayersProvider.notifier).updateLayer(layer);
+        ref
+            .read(bitmapProjectLayersProvider.notifier)
+            .updateLayer(
+              projectIndex: projectIndex,
+              layer: layer,
+            );
         return (true, null);
       },
     );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event);
+    return ref
+        .read(bitmapProjectHistoryProvider.notifier)
+        .add(projectIndex: projectIndex, event: event);
   }
 }

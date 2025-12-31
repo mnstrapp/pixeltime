@@ -26,7 +26,7 @@ class WorkspaceNotifier extends Notifier<bool> {
 
     final (projectScreen, projectError) = ref
         .read(workspaceProjectsProvider.notifier)
-        .add(projectScreen: BitmapProjectScreen(projectId: project.id!));
+        .add(project: project);
     if (projectError != null) {
       return (false, projectError);
     }
@@ -55,7 +55,8 @@ class WorkspaceNotifier extends Notifier<bool> {
     return (true, null);
   }
 
-  Future<(bool, String?)> remove(int index) async {
+  Future<(bool, String?)> remove() async {
+    final index = ref.read(workspaceIndexProvider);
     ref.read(workspaceTabsProvider.notifier).remove(index);
     ref.read(workspaceProjectsProvider.notifier).remove(index);
     final tabs = ref.read(workspaceTabsProvider);
@@ -87,49 +88,19 @@ class WorkspaceNotifier extends Notifier<bool> {
   }
 
   Future<(bool, String?)> save() async {
-    final projectScreen = ref
-        .read(workspaceProjectsProvider.notifier)
-        .projectScreen;
-    if (projectScreen == null) {
-      return (false, 'No project opened');
+    final (project, projectError) = ref
+        .read(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null || project == null) {
+      return (false, projectError);
     }
 
-    final project = ref
-        .read(bitmapProjectsProvider)
-        .firstWhere(
-          (project) => project.id == projectScreen.projectId,
-        );
     final (_, saveError) = await project.save();
     if (saveError != null) {
       if (saveError.contains('UNIQUE')) {
         return (false, 'Project name must be unique');
       }
       return (false, saveError);
-    }
-    final (_, loadError) = await ref
-        .read(bitmapProjectsProvider.notifier)
-        .loadAll();
-    if (loadError != null) {
-      return (false, loadError);
-    }
-    state = true;
-    return (true, null);
-  }
-
-  Future<(bool, String?)> saveAll() async {
-    for (final projectScreen in ref.read(workspaceProjectsProvider)) {
-      final project = ref
-          .read(bitmapProjectsProvider)
-          .firstWhere(
-            (project) => project.id == projectScreen.projectId,
-          );
-      final (_, saveError) = await project.save();
-      if (saveError != null) {
-        if (saveError.contains('UNIQUE')) {
-          return (false, 'Project name must be unique');
-        }
-        return (false, saveError);
-      }
     }
     final (_, loadError) = await ref
         .read(bitmapProjectsProvider.notifier)
@@ -167,10 +138,7 @@ class WorkspaceNotifier extends Notifier<bool> {
     final projects = ref.read(workspaceProjectsProvider);
     if (projects.isNotEmpty) {
       try {
-        final projectScreen = projects.firstWhere(
-          (projectScreen) => projectScreen.projectId == project.id,
-        );
-        final projectIndex = projects.indexOf(projectScreen);
+        final projectIndex = projects.indexOf(project);
         if (projectIndex != -1) {
           projects.removeAt(projectIndex);
           final newIndex = (projects.isNotEmpty) ? 0 : -1;
@@ -205,8 +173,7 @@ class WorkspaceNotifier extends Notifier<bool> {
         .read(bitmapProjectsProvider)
         .firstWhere(
           (project) =>
-              project.id ==
-              ref.read(workspaceProjectsProvider)[index].projectId,
+              project.id == ref.read(workspaceProjectsProvider)[index].id,
         );
     return (project, null);
   }
