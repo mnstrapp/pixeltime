@@ -5,13 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../models/bitmap_project.dart';
 import '../models/bitmap_project_layer.dart';
 import '../ui/grid_provider.dart';
 import '../ui/theme.dart';
 import '../workspace/index_provider.dart';
 import '../workspace/workspace_provider.dart';
-import 'bitmap_projects_provider.dart';
 import 'layers/layers_provider.dart';
 import 'layers/layers_widget.dart';
 import 'tools/color_provider.dart';
@@ -119,24 +117,14 @@ class _LayerCanvas extends ConsumerStatefulWidget {
 }
 
 class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
-  ui.Image? _image;
-  ui.Image? _bufferImage;
-  List<BitmapProjectPixel> _bufferPixels = [];
   Offset? _currentPosition;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _buildImage().then((image) {
-        setState(() {
-          _image = image;
-        });
-      });
-    });
   }
 
-  Future<void> _buildBufferImage() async {
+  ui.Image _buildBufferImage() {
     final pixelSize = ref.read(pixelSizeProvider);
     final scale = ref.read(pixelScaleProvider);
     final gridSize = pixelSize.toDouble() * scale;
@@ -147,7 +135,8 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
 
     int maxX = 0;
     int maxY = 0;
-    for (var pixel in _bufferPixels) {
+    final bufferPixels = ref.read(bitmapProjectLayerPixelsProvider);
+    for (var pixel in bufferPixels) {
       if (pixel.x > maxX) {
         maxX = pixel.x;
       }
@@ -156,7 +145,7 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       }
     }
 
-    for (var pixel in _bufferPixels) {
+    for (var pixel in bufferPixels) {
       canvas.drawRect(
         Rect.fromLTWH(
           (pixel.x.toDouble() ~/ gridSize) * gridSize,
@@ -169,17 +158,16 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     }
 
     final picture = recorder.endRecording();
-    final image = await picture.toImage(
+    final image = picture.toImageSync(
       (maxX.toDouble() * scale).ceil() + gridSize.toInt(),
       (maxY.toDouble() * scale).ceil() + gridSize.toInt(),
     );
     picture.dispose();
-    setState(() {
-      _bufferImage = image;
-    });
+    return image;
   }
 
-  Future<ui.Image> _buildImage() async {
+  ui.Image _buildImage() {
+    final size = MediaQuery.sizeOf(context);
     final (project, _) = ref.watch(workspaceProvider.notifier).currentProject();
 
     final layer = project!.layers.firstWhere((layer) => layer.id == widget.id);
@@ -203,6 +191,18 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       }
     }
 
+    for (var i = 0; i < size.height; i++) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          0,
+          (i.toDouble() ~/ gridSize) * gridSize,
+          size.width,
+          gridSize,
+        ),
+        Paint()..color = Colors.transparent,
+      );
+    }
+
     for (var pixel in layer.pixels) {
       canvas.drawRect(
         Rect.fromLTWH(
@@ -216,7 +216,7 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     }
 
     final picture = recorder.endRecording();
-    final image = await picture.toImage(
+    final image = picture.toImageSync(
       (layer.width.toDouble() * scale).ceil(),
       (layer.height.toDouble() * scale).ceil(),
     );
@@ -229,16 +229,19 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     final dy = offset.dy.toInt();
 
     final color = ref.read(bitmapProjectToolColorProvider);
-    setState(() {
-      _bufferPixels.add(BitmapProjectPixel(color: color, x: dx, y: dy));
-    });
-    _buildBufferImage();
+    ref
+        .read(bitmapProjectLayerPixelsProvider.notifier)
+        .add(
+          pixel: BitmapProjectPixel(color: color, x: dx, y: dy),
+        );
   }
 
-  void _saveBufferPixels(List<BitmapProjectPixel> pixels) {
+  Future<void> _saveBufferPixels() async {
     if (!mounted) {
       return;
     }
+
+    final pixels = ref.read(bitmapProjectLayerPixelsProvider);
 
     if (pixels.isEmpty) {
       return;
@@ -277,22 +280,19 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
       final color = ref.read(bitmapProjectToolColorProvider);
       final height = (layer.height + yDiff).toInt() + gridSize.toInt();
       final width = (layer.width + xDiff).toInt() + gridSize.toInt();
-      ref
-          .read(bitmapProjectLayerPixelsProvider.notifier)
-          .add(
-            pixel: BitmapProjectPixel(color: color, x: dx, y: dy),
-            height: height,
-            width: width,
-          );
+      layer.pixels.add(BitmapProjectPixel(color: color, x: dx, y: dy));
+      layer.height = height;
+      layer.width = width;
     }
-
-    _buildImage().then((image) {
-      setState(() {
-        _image = image;
-        _bufferPixels = [];
-        _bufferImage = null;
-      });
-    });
+    final (_, saveError) = await layer.save();
+    if (saveError != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(saveError)));
+      return;
+    }
+    ref.read(bitmapProjectLayersProvider.notifier).refresh();
+    ref.read(bitmapProjectLayerPixelsProvider.notifier).clear();
   }
 
   void _useSelectedTool(Offset offset) {
@@ -317,14 +317,12 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final projectIndex = ref.watch(workspaceIndexProvider);
-    if (projectIndex >= ref.watch(bitmapProjectLayersProvider).length) {
-      return const CircularProgressIndicator();
-    }
-    final layers = ref.watch(bitmapProjectLayersProvider)[projectIndex];
+    final layers = ref.watch(bitmapProjectLayersProvider);
     if (layers.isEmpty) {
       return const CircularProgressIndicator();
     }
+    ui.Image bufferImage = _buildBufferImage();
+    ui.Image image = _buildImage();
 
     BitmapProjectLayer? layer;
     if (layers.any((layer) => layer.id == widget.id)) {
@@ -334,25 +332,24 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     if (layer == null || layer.visible == false) {
       return const SizedBox.shrink();
     }
+    debugPrint('build layer: ${layer.name} ${layer.id}');
 
     return Stack(
       children: [
-        if (_image != null)
-          CustomPaint(
-            size: Size(
-              _image!.width.toDouble(),
-              _image!.height.toDouble(),
-            ),
-            painter: _LayerPainter(image: _image!),
+        CustomPaint(
+          size: Size(
+            image.width.toDouble(),
+            image.height.toDouble(),
           ),
-        if (_bufferImage != null)
-          CustomPaint(
-            size: Size(
-              _bufferImage!.width.toDouble(),
-              _bufferImage!.height.toDouble(),
-            ),
-            painter: _LayerPainter(image: _bufferImage!),
+          painter: _LayerPainter(image: image),
+        ),
+        CustomPaint(
+          size: Size(
+            bufferImage.width.toDouble(),
+            bufferImage.height.toDouble(),
           ),
+          painter: _LayerPainter(image: bufferImage),
+        ),
         GestureDetector(
           onPanDown: (details) => _useSelectedTool(details.globalPosition),
           onPanUpdate: (details) {
@@ -363,7 +360,10 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
             }
             _useSelectedTool(details.globalPosition);
           },
-          onPanEnd: (_) => _saveBufferPixels(_bufferPixels),
+          onPanEnd: (_) {
+            _saveBufferPixels();
+            image = _buildImage();
+          },
           child: Container(
             width: size.width,
             height: size.height,

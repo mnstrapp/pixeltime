@@ -1,68 +1,46 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/bitmap_project.dart';
 import '../../models/bitmap_project_layer.dart';
-import '../../workspace/index_provider.dart';
 import '../../workspace/workspace_provider.dart';
 import '../bitmap_projects_provider.dart';
 import '../history_provider.dart';
 import 'layer_history_event.dart';
 
 final bitmapProjectLayersProvider =
-    NotifierProvider<
-      BitmapProjectLayersNotifier,
-      List<List<BitmapProjectLayer>>
-    >(() {
+    NotifierProvider<BitmapProjectLayersNotifier, List<BitmapProjectLayer>>(() {
       return BitmapProjectLayersNotifier();
     });
 
-class BitmapProjectLayersNotifier
-    extends Notifier<List<List<BitmapProjectLayer>>> {
+class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
   @override
-  List<List<BitmapProjectLayer>> build() {
-    return <List<BitmapProjectLayer>>[];
+  List<BitmapProjectLayer> build() {
+    return <BitmapProjectLayer>[];
   }
 
-  Future<(bool, String?)> loadAll({
-    required BitmapProject project,
-  }) async {
-    final projectIndex = ref.read(workspaceIndexProvider);
-    if (projectIndex < 0) {
-      return (false, 'Project index is less than 0');
+  Future<(bool, String?)> loadAll() async {
+    final (project, projectError) = ref
+        .read(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null) {
+      return (false, projectError);
     }
-    if (projectIndex >= state.length) {
-      state = List.generate(
-        projectIndex + 1,
-        (index) => <BitmapProjectLayer>[],
-      );
+    if (project == null) {
+      return (false, 'Project not found');
     }
-    state[projectIndex] = [];
     final (layers, findError) = await BitmapProjectLayer.findAllByProjectId(
       project.id!,
     );
     if (findError != null) {
       return (false, findError);
     }
-    if (projectIndex >= state.length) {
-      state = List.generate(
-        projectIndex + 1,
-        (index) => <BitmapProjectLayer>[],
-      );
-    }
-    state[projectIndex] = layers;
+    debugPrint('loadAll layers: ${layers.map((l) => l.name).join(', ')}');
+    state = layers;
     return (true, null);
   }
 
   Future<(bool, String?)> refresh() async {
-    final (project, currentProjectError) = ref
-        .read(workspaceProvider.notifier)
-        .currentProject();
-    if (currentProjectError != null) {
-      return (false, currentProjectError);
-    }
-    final (loadSuccess, loadError) = await loadAll(
-      project: project!,
-    );
+    final (loadSuccess, loadError) = await loadAll();
     if (loadError != null) {
       return (false, loadError);
     }
@@ -93,16 +71,16 @@ class BitmapProjectLayersNotifier
   void updateLayer({
     required BitmapProjectLayer layer,
   }) {
-    final projectIndex = ref.read(workspaceIndexProvider);
-    if (projectIndex >= state.length) {
-      state = List.generate(
-        projectIndex + 1,
-        (index) => <BitmapProjectLayer>[],
-      );
+    final (project, projectError) = ref
+        .read(workspaceProvider.notifier)
+        .currentProject();
+    if (projectError != null) {
+      return;
     }
-    state[projectIndex] = state[projectIndex]
-        .map((l) => l.id == layer.id ? layer : l)
-        .toList();
+    if (project == null) {
+      return;
+    }
+    state = state.map((l) => l.id == layer.id ? layer : l).toList();
   }
 
   Future<(bool, String?)> update({
@@ -170,11 +148,10 @@ class BitmapProjectLayersNotifier
   }
 
   BitmapProjectLayer? topVisibleLayer() {
-    final projectIndex = ref.read(workspaceIndexProvider);
     BitmapProjectLayer? layer;
-    for (var i = 0; i < state[projectIndex].length; i++) {
-      if (state[projectIndex][i].visible) {
-        layer = state[projectIndex][i];
+    for (var i = 0; i < state.length; i++) {
+      if (state[i].visible) {
+        layer = state[i];
         break;
       }
     }
@@ -185,53 +162,35 @@ class BitmapProjectLayersNotifier
 final bitmapProjectLayerPixelsProvider =
     NotifierProvider<
       BitmapProjectLayerPixelsNotifier,
-      List<List<BitmapProjectPixel>>
+      List<BitmapProjectPixel>
     >(() {
       return BitmapProjectLayerPixelsNotifier();
     });
 
 class BitmapProjectLayerPixelsNotifier
-    extends Notifier<List<List<BitmapProjectPixel>>> {
+    extends Notifier<List<BitmapProjectPixel>> {
   @override
-  List<List<BitmapProjectPixel>> build() {
-    return <List<BitmapProjectPixel>>[];
+  List<BitmapProjectPixel> build() {
+    return <BitmapProjectPixel>[];
   }
 
-  void set({required int projectIndex, required BitmapProjectLayer layer}) {
-    state[projectIndex] = layer.pixels;
+  void set({required BitmapProjectLayer layer}) {
+    state = layer.pixels;
   }
 
-  Future<(bool, String?)> add({
+  void add({
     required BitmapProjectPixel pixel,
-    required int height,
-    required int width,
   }) async {
-    final layer = ref
-        .read(bitmapProjectLayersProvider.notifier)
-        .topVisibleLayer();
-    if (layer == null) {
-      return (false, 'Layer not found');
-    }
-    final event = LayerAddPixelHistoryEvent(
-      layer: layer,
-      pixel: pixel,
-      height: height,
-      width: width,
-      onExecute: () async {
-        ref
-            .read(bitmapProjectLayersProvider.notifier)
-            .updateLayer(layer: layer);
-        return (true, null);
-      },
-      onUndo: () async {
-        ref
-            .read(bitmapProjectLayersProvider.notifier)
-            .updateLayer(
-              layer: layer,
-            );
-        return (true, null);
-      },
-    );
-    return ref.read(bitmapProjectHistoryProvider.notifier).add(event: event);
+    state = [...state, pixel];
+  }
+
+  void remove({
+    required BitmapProjectPixel pixel,
+  }) async {
+    state = state.where((p) => p.x != pixel.x || p.y != pixel.y).toList();
+  }
+
+  void clear() {
+    state = [];
   }
 }

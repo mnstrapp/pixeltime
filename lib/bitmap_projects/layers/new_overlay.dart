@@ -34,7 +34,6 @@ class _BitmapProjectLayersNewOverlayState
       return;
     }
 
-    final projectIndex = ref.watch(workspaceIndexProvider);
     final (project, projectError) = ref
         .watch(workspaceProvider.notifier)
         .currentProject();
@@ -42,11 +41,11 @@ class _BitmapProjectLayersNewOverlayState
       return;
     }
 
-    final layers = ref.read(bitmapProjectLayersProvider)[projectIndex];
+    final layers = ref.read(bitmapProjectLayersProvider);
     final layer = BitmapProjectLayer(
       name: _nameController.text,
       projectId: project.id!,
-      position: layers.isNotEmpty ? layers.last.position + 1 : 0,
+      position: layers.length + 1,
     );
 
     try {

@@ -60,16 +60,9 @@ class _LayerList extends ConsumerStatefulWidget {
 
 class _LayerListState extends ConsumerState<_LayerList> {
   Future<void> _loadAll() async {
-    final (project, projectError) = ref
-        .watch(workspaceProvider.notifier)
-        .currentProject();
-    if (projectError != null || project == null) {
-      return;
-    }
-
     final (_, loadAllError) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll();
     if (loadAllError != null) {
       ScaffoldMessenger.of(
         context,
@@ -158,7 +151,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
 
       final (_, error) = await ref
           .read(bitmapProjectLayersProvider.notifier)
-          .loadAll(project: project);
+          .loadAll();
       if (error != null) {
         ScaffoldMessenger.of(
           context,
@@ -174,7 +167,7 @@ class _LayerListState extends ConsumerState<_LayerList> {
       return const CircularProgressIndicator();
     }
 
-    final layers = ref.watch(bitmapProjectLayersProvider)[projectIndex];
+    final layers = ref.watch(bitmapProjectLayersProvider);
     final color = Theme.of(context).colorScheme.inversePrimary;
     final size = MediaQuery.sizeOf(context);
     return Container(
@@ -334,7 +327,7 @@ class _LayerActionsState extends ConsumerState<_LayerActions> {
         return;
       }
 
-      ref.read(bitmapProjectLayersProvider.notifier).loadAll(project: project);
+      ref.read(bitmapProjectLayersProvider.notifier).loadAll();
     });
   }
 

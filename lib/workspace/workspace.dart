@@ -187,7 +187,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
     _buildProjectMenuBar();
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll();
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -203,7 +203,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
     _buildProjectMenuBar();
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll();
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -322,16 +322,9 @@ class WorkspaceState extends ConsumerState<Workspace> {
     final messenger = ScaffoldMessenger.of(context);
     ref.read(workspaceIndexProvider.notifier).index(index);
     _buildProjectMenuBar();
-    final project = ref.read(workspaceProjectsProvider)[index];
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(
-          project: ref
-              .read(bitmapProjectsProvider)
-              .firstWhere(
-                (p) => p.id == project.id,
-              ),
-        );
+        .loadAll();
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
@@ -354,7 +347,7 @@ class WorkspaceState extends ConsumerState<Workspace> {
     _buildProjectMenuBar();
     final (_, error) = await ref
         .read(bitmapProjectLayersProvider.notifier)
-        .loadAll(project: project);
+        .loadAll();
     if (error != null) {
       messenger.showSnackBar(SnackBar(content: Text(error)));
     }
