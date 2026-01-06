@@ -162,11 +162,6 @@ class _LayerListState extends ConsumerState<_LayerList> {
 
   @override
   Widget build(BuildContext context) {
-    final projectIndex = ref.watch(workspaceIndexProvider);
-    if (projectIndex >= ref.watch(bitmapProjectLayersProvider).length) {
-      return const CircularProgressIndicator();
-    }
-
     final layers = ref.watch(bitmapProjectLayersProvider);
     final color = Theme.of(context).colorScheme.inversePrimary;
     final size = MediaQuery.sizeOf(context);
