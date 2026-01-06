@@ -332,7 +332,6 @@ class _LayerCanvasState extends ConsumerState<_LayerCanvas> {
     if (layer == null || layer.visible == false) {
       return const SizedBox.shrink();
     }
-    debugPrint('build layer: ${layer.name} ${layer.id}');
 
     return Stack(
       children: [

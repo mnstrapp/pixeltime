@@ -34,7 +34,6 @@ class BitmapProjectLayersNotifier extends Notifier<List<BitmapProjectLayer>> {
     if (findError != null) {
       return (false, findError);
     }
-    debugPrint('loadAll layers: ${layers.map((l) => l.name).join(', ')}');
     state = layers;
     return (true, null);
   }
